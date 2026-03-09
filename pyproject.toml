@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyProp"
+authors = [
+    {name = "Tristan Merbecks", email = "tristan.merbecks@gmail.com"},
+]
+description = "Creation of EOS fluid models, simulation of experiments and property table generation"
+dependencies = [
+    "CoolProp",
+    "numpy",
+]
+dynamic = ["version"]
