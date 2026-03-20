@@ -1,8 +1,21 @@
-from .errors import PackageError
-from . import PackageFactories
-from .base import BaseState
+from typing import TYPE_CHECKING
 
-def State(state) -> BaseState:
+from .errors import PackageError
+from .coolprop import CoolPropFactory
+# from .thermopack import thermopackFactory
+
+
+if TYPE_CHECKING:
+    from .base import BaseState
+
+
+PackageFactories = [
+    CoolPropFactory,
+    # thermopackFactory,
+    ]
+
+
+def State(state) -> "BaseState":
 
     for factory in PackageFactories:
 

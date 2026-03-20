@@ -1,6 +1,8 @@
+from .settings import DO_WORKAROUND
+from .settings import PMIN, PMAX
+
 from .constants import pairs, properties, phases, variables
-from .constants import inputs_to_default_inputs, pair_to_vars, vars_to_pair
-from .constants import PMIN, PMAX
+from .utils import inputs_to_default_inputs, pair_to_vars, vars_to_pair
 from scipy.optimize import root_scalar, minimize_scalar, minimize
 
 from .residuals import res_T_p, res_Q_p, res_p_T, res_Q_T, res_T_Q
@@ -17,24 +19,24 @@ class BaseState:
         self.eos = None
 
         self._update_func_lookup = {
-            pairs.PDmolar : self._PDmolar,
-            pairs.PHmolar : self._PHmolar,
+            pairs.DmolarHmolar : self._DmolarHmolar,
+            pairs.DmolarP : self._DmolarP,
+            pairs.DmolarQmolar : self._DmolarQmolar,
+            pairs.DmolarSmolar : self._DmolarSmolar,
+            pairs.DmolarT : self._DmolarT,
+            pairs.DmolarUmolar : self._DmolarUmolar,
+
+            pairs.HmolarP : self._HmolarP,
+            pairs.HmolarQmolar : self._HmolarQmolar,
+            pairs.HmolarSmolar : self._HmolarSmolar,
+            pairs.HmolarT : self._HmolarT,
+            pairs.HmolarUmolar : self._HmolarUmolar,
+
             pairs.PQmolar : self._PQmolar,
             pairs.PSmolar : self._PSmolar,
             pairs.PT : self._PT,
             pairs.PUmolar : self._PUmolar,
 
-            pairs.DmolarHmolar : self._DmolarHmolar,
-            pairs.DmolarQmolar : self._DmolarQmolar,
-            pairs.DmolarSmolar : self._DmolarSmolar,
-            pairs.DmolarT : self._DmolarT,
-            pairs.DmolarUmolar : self._DmolarUmolar,
-            
-            pairs.HmolarQmolar : self._HmolarQmolar,
-            pairs.HmolarSmolar : self._HmolarSmolar,
-            pairs.HmolarT : self._HmolarT,
-            pairs.HmolarUmolar : self._HmolarUmolar,
-            
             pairs.QmolarSmolar : self._QmolarSmolar,
             pairs.QmolarT : self._QmolarT,
             pairs.QmolarUmolar : self._QmolarUmolar,
@@ -90,14 +92,20 @@ class BaseState:
         try:
             result = func(val1_SI, val2_SI, **kwargs)
         except ValueError as e:
-            msg = f"WARNING! Package \"{self.package}\" with model \"{self.model}\" has raised an error \"{e}\". Attempting to workaround"
+            msg = f"WARNING! Package \"{self.package}\" with model \"{self.model}\" has raised an error \"{e}\"."
             print(msg)
 
-            try:
-                result = self._workaround(var1, val1_SI, var2, val2_SI, **kwargs)
-            except:
-                msg = f"Workaround for missing calculation mode failed!"
-                raise Exception(msg)
+            if DO_WORKAROUND:
+                try:
+                    print("Attempting to workaround...")
+                    result = self._workaround(var1, val1_SI, var2, val2_SI, **kwargs)
+                    print("Workaround completed!")
+                except:
+                    msg = f"Workaround for missing calculation mode failed!"
+                    raise Exception(msg)
+            else:
+                msg = f"Package \"{self.package}\" with model \"{self.model}\" has raised an error \"{e}\"."
+                raise ValueError(msg)
 
         return self._postprocess(result)
     
@@ -164,40 +172,14 @@ class BaseState:
         return Qmolar * 1.
 
 
-    def _PDmolar(self, p, Dmolar, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pDmolar method for the {self.model} model"
-        raise NotImplementedError
-    
-    def _PHmolar(self, p, Hmolar, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pHmolar method for the {self.model} model"
-        raise NotImplementedError
-
-    def _PQmolar(self, p, Qmolar, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pQmolar method for the {self.model} model"
-        raise NotImplementedError
-
-    def _PSmolar(self, p, Smolar, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pSmolar method for the {self.model} model"
-        raise NotImplementedError
-
-    def _PT(self, p, T, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pT method for the {self.model} model"
-        raise NotImplementedError
-
-    def _PUmolar(self, p, Umolar, **kwargs):
-
-        msg = f"The API for {self.package} does not implement yet a pUmolar method for the {self.model} model"
-        raise NotImplementedError
-
-
     def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
 
-        msg = f"The API for {self.package} does not implement yet a HmolarSmolar method for the {self.model} model"
+        msg = f"The API for {self.package} does not implement yet a DmolarHmolar method for the {self.model} model"
+        raise NotImplementedError
+    
+    def _DmolarP(self, Dmolar, p, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a DmolarP method for the {self.model} model"
         raise NotImplementedError
 
     def _DmolarQmolar(self, Dmolar, Qmolar, **kwargs):
@@ -207,7 +189,7 @@ class BaseState:
     
     def _DmolarSmolar(self, Dmolar, Smolar, **kwargs):
 
-        msg = f"The API for {self.package} does not implement yet a HmolarSmolar method for the {self.model} model"
+        msg = f"The API for {self.package} does not implement yet a DmolarSmolar method for the {self.model} model"
         raise NotImplementedError
     
     def _DmolarT(self, Dmolar, T, **kwargs):
@@ -217,9 +199,14 @@ class BaseState:
 
     def _DmolarUmolar(self, Dmolar, Umolar, **kwargs):
 
-        msg = f"The API for {self.package} does not implement yet a HmolarSmolar method for the {self.model} model"
+        msg = f"The API for {self.package} does not implement yet a DmolarUmolar method for the {self.model} model"
         raise NotImplementedError
- 
+
+
+    def _HmolarP(self, Hmolar, p, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a HmolarP method for the {self.model} model"
+        raise NotImplementedError
 
     def _HmolarQmolar(self, Hmolar, Qmolar, **kwargs):
 
@@ -241,13 +228,34 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a HmolarUmolar method for the {self.model} model"
         raise NotImplementedError
     
+   
+    def _PQmolar(self, p, Qmolar, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a pQmolar method for the {self.model} model"
+        raise NotImplementedError
+
+    def _PSmolar(self, p, Smolar, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a pSmolar method for the {self.model} model"
+        raise NotImplementedError
+
+    def _PT(self, p, T, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a pT method for the {self.model} model"
+        raise NotImplementedError
+
+    def _PUmolar(self, p, Umolar, **kwargs):
+
+        msg = f"The API for {self.package} does not implement yet a pUmolar method for the {self.model} model"
+        raise NotImplementedError
+
 
     def _QmolarSmolar(self, Qmolar, Smolar, **kwargs):
 
         msg = f"The API for {self.package} does not implement yet a QmolarSmolar method for the {self.model} model"
         raise NotImplementedError
 
-    def _QmolarT(self, T, Qmolar, **kwargs):
+    def _QmolarT(self, Qmolar, T, **kwargs):
 
         msg = f"The API for {self.package} does not implement yet a QmolarT method for the {self.model} model"
         raise NotImplementedError
@@ -263,7 +271,7 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a SmolarT method for the {self.model} model"
         raise NotImplementedError
 
-    def _SmolarUmolar(self, T, Smolar, **kwargs):
+    def _SmolarUmolar(self, Smolar, Umolar, **kwargs):
 
         msg = f"The API for {self.package} does not implement yet a SmolarUmolar method for the {self.model} model"
         raise NotImplementedError

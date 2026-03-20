@@ -1,11 +1,14 @@
 from enum import Enum
 from itertools import combinations
 
-PMIN = 1e-9
-PMAX = 1e9
-TMIN = 0
-TMAX = None
 
+class phases(Enum):
+    l = "liquid"
+    g = "gaseous"   
+    tp = "two-phase"
+    sl = "supercritical liquid"
+    sg = "supercritical gas"
+    s = "supercritical"
 
 class variables(Enum):
     P = "P"
@@ -182,9 +185,9 @@ class properties(Enum):
 
 # the default variables
 _default_variables = [
-    variables.P,
     variables.Dmolar,
     variables.Hmolar,
+    variables.P,
     variables.Qmolar,
     variables.Smolar,
     variables.T,
@@ -192,7 +195,29 @@ _default_variables = [
 ]
 
 # the default variable pairs
-_default_pairs = [pairs(v1.value + v2.value) for (v1, v2) in list(combinations(_default_variables, 2))]
+# _default_pairs = [pairs(v1.value + v2.value) for (v1, v2) in list(combinations(_default_variables, 2))]
+_default_pairs = [
+    pairs.DmolarHmolar,
+    pairs.DmolarP,
+    pairs.DmolarSmolar,
+    pairs.DmolarT     ,
+    pairs.DmolarUmolar,
+    pairs.HmolarP     ,
+    pairs.HmolarQmolar,
+    pairs.HmolarSmolar,
+    pairs.HmolarT     ,
+    pairs.HmolarUmolar,
+    pairs.PQmolar     ,
+    pairs.PSmolar     ,
+    pairs.PT,
+    pairs.PUmolar     ,
+    pairs.QmolarSmolar,
+    pairs.QmolarT     ,
+    pairs.QmolarUmolar,
+    pairs.SmolarT     ,
+    pairs.SmolarUmolar,
+    pairs.TUmolar 
+]
 
 # mapping of the variables to its corresponding default variable
 _var_to_default_var = {
@@ -209,8 +234,6 @@ _var_to_default_var = {
     variables.Umass : variables.Umolar,
     variables.Umolar : variables.Umolar,
     }
-def var_to_default_var(var):
-    return _var_to_default_var[var]
 
 
 # the conversion factors for for each variable to its default variable
@@ -226,8 +249,6 @@ _var_conv = {
     (variables.Umass, variables.Umolar): 1,
     (variables.Umolar, variables.Umass): 1,
     }
-def conversion(from_var, to_var):
-    return _var_conv.get((from_var, to_var), None)
 
 
 # mapping between the state variables and the corresponding property 
@@ -245,71 +266,13 @@ _var_to_property = {
     variables.Umass : properties.Umass,
     variables.Umolar : properties.Umolar,
 }
-def var_to_property(var):
-    return _var_to_property[var]
 
 
 # mapping between pairs and the corresponvariables
 _pair_to_vars = {v1.value + v2.value: (v1, v2) for (v1, v2) in list(combinations(variables, 2)) if (v1.value+v2.value in pairs)}
 _pair_to_vars.update({v2.value + v1.value: (v2, v1) for (v1, v2) in list(combinations(variables, 2)) if (v1.value+v2.value in pairs)})
 _pair_to_vars = {pairs(k): v for k, v in _pair_to_vars.items()}
-def pair_to_vars(pair):
-    return _pair_to_vars[pair]
 
 
 _vars_to_pair = {v: k for k, v in _pair_to_vars.items()}
-def vars_to_pair(var1, var2):
-    return _vars_to_pair[(var1, var2)]
 
-
-def pair_to_default_pair(pair):
-    var1, var2 = pair_to_vars(pair)
-
-    dvar1 = var_to_default_var(var1)
-    dvar2 = var_to_default_var(var2)
-
-    dpair = vars_to_pair(dvar1, dvar2)
-    if dpair not in _default_pairs:
-        dpair = vars_to_pair(dvar2, dvar1)
-
-    return dpair
-
-
-def inputs_to_default_inputs(pair, vals):
-    # obtain the variables and values
-    var1, var2 = pair_to_vars(pair)
-    val1, val2 = vals
-
-    # obtain the corresponding default variables
-    dvar1 = var_to_default_var(var1)
-    dvar2 = var_to_default_var(var2)
-
-    # obtain the conversion factors
-    conv1 = conversion(var1, dvar1)
-    conv2 = conversion(var2, dvar2)
-
-    # construct the "default" pair from the default variables
-    dpair = vars_to_pair(dvar1, dvar2)
-    if dpair not in _default_pairs:
-        # "default" pair is reversed, so swap the variables, values and conversion
-        dvar1, dvar2 = dvar2, dvar1
-        val1, val2 = val2, val1
-        conv1, conv2 = conv2, conv1
-
-        # update the default pair
-        dpair = vars_to_pair(dvar1, dvar2)
-
-    return dpair, {"var": dvar1, "val": val1, "conv" : conv1}, {"var": dvar2, "val": val2, "conv" : conv2}
-
-
-class phases(Enum):
-    l = "liquid"
-    g = "gaseous"   
-    tp = "two-phase"
-    sl = "supercritical liquid"
-    sg = "supercritical gas"
-    s = "supercritical"
-
-
-if __name__ == "__main__":
-    print(pair_to_default_pair(pairs.PHmass))
