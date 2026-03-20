@@ -24,79 +24,74 @@ class CoolPropState(BaseState):
         self.eos = state
 
 
-    def _PT(self, p, T, **kwargs):
+    def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
+        self.eos.update(cp.DmolarHmolar_INPUTS, Dmolar, Hmolar)
 
-        self.eos.update(cp.PT_INPUTS, p, T)
-
-    def _PDmolar(self, p, Dmolar, **kwargs):
-
+    def _DmolarP(self, Dmolar, p, **kwargs):
         self.eos.update(cp.DmolarP_INPUTS, Dmolar, p)
 
+    def _DmolarQmolar(self, Dmolar, Qmolar, **kwargs):
+        self.eos.update(cp.DmolarQ_INPUTS, Dmolar, Qmolar)
+
+    def _DmolarSmolar(self, Dmolar, Smolar, **kwargs):
+        self.eos.update(cp.DmolarSmolar_INPUTS, Dmolar, Smolar)
+
+    def _DmolarT(self, Dmolar, T, **kwargs):
+        self.eos.update(cp.DmolarT_INPUTS, Dmolar, T)
+
+    def _DmolarUmolar(self, Dmolar, Umolar, **kwargs):
+        self.eos.update(cp.DmolarUmolar_INPUTS, Dmolar, Umolar)
+
+
+    def _HmolarP(self, Hmolar, p, **kwargs):
+        self.eos.update(cp.HmolarP_INPUTS, Hmolar, p)
+
+    def _HmolarQmolar(self, Hmolar, Qmolar, **kwargs):
+        self.eos.update(cp.HmolarQ_INPUTS, Hmolar, self.Qmolar)
+
+    def _HmolarSmolar(self, Hmolar, Smolar, **kwargs):
+        self.eos.update(cp.HmolarSmolar_INPUTS, Hmolar, Smolar)
+
+    def _HmolarT(self, Hmolar, T, **kwargs):
+        self.eos.update(cp.HmolarT_INPUTS, Hmolar, T)
+
+    # CoolProp does not have a HmolarUmolar calculation mode
+
+
     def _PQmolar(self, p, Qmolar, **kwargs):
-        
         self.eos.update(cp.PQ_INPUTS, p, Qmolar)
 
     def _PSmolar(self, p, Smolar, **kwargs):
-
         self.eos.update(cp.PSmolar_INPUTS, p, Smolar)
 
-    def _PHmolar(self, p, Hmolar, **kwargs):
+    def _PT(self, p, T, **kwargs):
 
-        self.eos.update(cp.HmolarP_INPUTS, Hmolar, p)
+        self.eos.update(cp.PT_INPUTS, p, T)
 
     def _PUmolar(self, p, Umolar, **kwargs):
 
         self.eos.update(cp.PUmolar_INPUTS, p, Umolar)
 
 
-    def _TDmolar(self, T, Dmolar, **kwargs):
-
-        self.eos.update(cp.DmolarT_INPUTS, Dmolar, T)
-
-    def _TQmolar(self, T, Qmolar, **kwargs):
-
-        self.eos.update(cp.QT_INPUTS, Qmolar, T)
-    
-    def _TSmolar(self, T, Smolar, **kwargs):
-
-        self.eos.update(cp.SmolarT_INPUTS, Smolar, T)
-
-    def _THmolar(self, T, Hmolar, **kwargs):
-
-        self.eos.update(cp.HmolarT_INPUTS, Hmolar, T)
-
-    def _TUmolar(self, T, Umolar, **kwargs):
-
-        self.eos.update(cp.TUmolar_INPUTS, T, Umolar)
-
-
-    def _HmolarSmolar(self, Hmolar, Smolar, **kwargs):
-
-        self.eos.update(cp.HmolarSmolar_INPUTS, Hmolar, Smolar)
-
-    def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
-
-        self.eos.update(cp.DmolarHmolar_INPUTS, Dmolar, Hmolar)
-
-    def _DmolarSmolar(self, Dmolar, Smolar, **kwargs):
-
-        self.eos.update(cp.DmolarSmolar_INPUTS, Dmolar, Smolar)
-
-    def _DmolarUmolar(self, Dmolar, Umolar, **kwargs):
-
-        self.eos.update(cp.DmolarUmolar_INPUTS, Dmolar, Umolar)
-
-    def _DmolarQmolar(self, Dmolar, Qmolar, **kwargs):
-
-        self.eos.update(cp.DmolarQ_INPUTS, Dmolar, Qmolar)
-
     def _QmolarSmolar(self, Qmolar, Smolar, **kwargs):
 
         self.eos.update(cp.QSmolar_INPUTS, Qmolar, Smolar)
 
-    def _QmolarHmolar(self, Qmolar, Hmolar, **kwargs):
+    def _QmolarT(self, Qmolar, T, **kwargs):
+        self.eos.update(cp.QT_INPUTS, Qmolar, T)
 
-        self.eos.update(cp.HmolarQ_INPUTS, Hmolar, Qmolar)
+    # CoolProp does not implement a QmolarUmolar mode
+
+
+    def _SmolarT(self, Smolar, T, **kwargs):
+        self.eos.update(cp.SmolarT_INPUTS, Smolar, T)
+
+    def _SmolarUmolar(self, Smolar, Umolar, **kwargs):
+        self.eos.update(cp.SmolarUmolar_INPUTS, Smolar, Umolar)
+
+
+    def _TUmolar(self, T, Umolar, **kwargs):
+        self.eos.update(cp.TUmolar_INPUTS, T, Umolar)
 
 
 

@@ -16,6 +16,9 @@ class PRCoolPropState(CoolPropState):
 
         self.model = "PengRobinson"
 
+    def _Qmolar(self):
+        return self.eos.Q()
+
 
 class SRKCoolPropState(CoolPropState):
 
@@ -23,6 +26,9 @@ class SRKCoolPropState(CoolPropState):
         super().__init__(state)
 
         self.model = "SoaveRedlichKwong"
+
+    def _Qmolar(self):
+        return self.eos.Q()
 
 
 class REFPROPCoolPropState(CoolPropState):
