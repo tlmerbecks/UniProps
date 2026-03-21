@@ -1,7 +1,17 @@
 from.constants import pairs
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .base import BaseState
+    from .constants import properties
 
-def res_p_T(p, state, T, prop, y, kwargs):
+
+def res_p_T(p: float, 
+            state: BaseState, 
+            T: float, 
+            prop: properties, 
+            y: float, 
+            kwargs: dict):
     """
     Calculate residual for pressure p, given a temperature T
     """
@@ -12,7 +22,12 @@ def res_p_T(p, state, T, prop, y, kwargs):
     return res
 
 
-def res_T_p(T, state, p, prop, y, kwargs):
+def res_T_p(T:float, 
+            state: BaseState, 
+            p: float, 
+            prop: properties, 
+            y: float, 
+            kwargs: dict):
     """
     Calculate residual for temperature T, given a pressure p
     """
@@ -20,7 +35,12 @@ def res_T_p(T, state, p, prop, y, kwargs):
     return res_p_T(p, state, T, prop, y, kwargs)
 
 
-def res_Q_p(Q, state, p, prop, y, kwargs):
+def res_Q_p(Q: float, 
+            state: BaseState, 
+            p: float, 
+            prop: properties, 
+            y: float, 
+            kwargs: dict):
     """
     Calculate residual for quality Q, given a pressure p
     """
@@ -30,7 +50,12 @@ def res_Q_p(Q, state, p, prop, y, kwargs):
 
     return res
 
-def res_Q_T(Q, state, T, prop, y, kwargs):
+def res_Q_T(Q: float, 
+            state: BaseState, 
+            T: float, 
+            prop: properties, 
+            y: float, 
+            kwargs: dict):
     """
     Calculate residual for quality Q, given a pressure p
     """
@@ -41,7 +66,12 @@ def res_Q_T(Q, state, T, prop, y, kwargs):
 
     return res
 
-def res_T_Q(Q, state, T, prop, y, kwargs):
+def res_T_Q(Q: float, 
+            state: BaseState, 
+            T: float, 
+            prop: properties, 
+            y: float, 
+            kwargs: dict):
     """
     Calculate residual for temperature T, given a quality Q
     """

@@ -16,12 +16,11 @@ phases_map = {
 
 class CoolPropState(BaseState):
 
-    def __init__(self, state):
-        super().__init__(state)
+    def __init__(self, state: cp.AbstractState):
+        super().__init__()
 
         self.package = "CoolProp"
-
-        self.eos = state
+        self.eos: cp.AbstractState = state
 
 
     def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
@@ -47,7 +46,7 @@ class CoolPropState(BaseState):
         self.eos.update(cp.HmolarP_INPUTS, Hmolar, p)
 
     def _HmolarQmolar(self, Hmolar, Qmolar, **kwargs):
-        self.eos.update(cp.HmolarQ_INPUTS, Hmolar, self.Qmolar)
+        self.eos.update(cp.HmolarQ_INPUTS, Hmolar, Qmolar)
 
     def _HmolarSmolar(self, Hmolar, Smolar, **kwargs):
         self.eos.update(cp.HmolarSmolar_INPUTS, Hmolar, Smolar)

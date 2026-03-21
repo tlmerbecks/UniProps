@@ -7,28 +7,32 @@ from .constants import (
     _default_pairs,
     )
 
+from typing import TYPE_CHECKING, Iterable, Tuple, Dict
+if TYPE_CHECKING:
+    from .constants import variables, properties, pairs 
 
-def var_to_default_var(var):
+
+def var_to_default_var(var: variables) -> variables:
     return _var_to_default_var[var]
 
 
-def conversion(from_var, to_var):
+def conversion(from_var: variables, to_var: variables) -> float | None:
     return _var_conv.get((from_var, to_var), None)
 
 
-def var_to_property(var):
+def var_to_property(var: variables) -> properties:
     return _var_to_property[var]
 
 
-def pair_to_vars(pair):
+def pair_to_vars(pair: pairs) -> tuple[variables, variables]:
     return _pair_to_vars[pair]
 
 
-def vars_to_pair(var1, var2):
+def vars_to_pair(var1: variables, var2: variables) -> pairs:
     return _vars_to_pair[(var1, var2)]
 
 
-def pair_to_default_pair(pair):
+def pair_to_default_pair(pair: pairs) -> pairs:
     var1, var2 = pair_to_vars(pair)
 
     dvar1 = var_to_default_var(var1)
@@ -40,8 +44,8 @@ def pair_to_default_pair(pair):
 
     return dpair
 
-
-def inputs_to_default_inputs(pair, vals):
+# def inputs_to_default_inputs(pair: pairs, vals: Iterable[float]) -> tuple[pairs, dict[str, variables | float | None], dict[str, variables | float | None]]:
+def inputs_to_default_inputs(pair: pairs, vals: Iterable[float]) -> Tuple[pairs, Dict, Dict]:
     # obtain the variables and values
     var1, var2 = pair_to_vars(pair)
     val1, val2 = vals

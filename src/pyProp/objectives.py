@@ -1,7 +1,19 @@
 from numpy import log10
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .base import BaseState
+    from .constants import properties
 
-def obj_p_T(p, state, T, prop, y, pcrit, kwargs):
+
+
+def obj_p_T(p: float, 
+            state: BaseState, 
+            T: float, 
+            prop: properties, 
+            y: float, 
+            pcrit: float, 
+            kwargs: dict):
     """
     Calculate objective for a given pressure p, given a temperature T
     """
@@ -14,7 +26,13 @@ def obj_p_T(p, state, T, prop, y, pcrit, kwargs):
     return diff + penal
 
 
-def obj_T_Q(T, state, Q, prop, y, pcrit, kwargs):
+def obj_T_Q(T: float, 
+            state: BaseState, 
+            Q: float, 
+            prop: properties, 
+            y: float, 
+            pcrit: float, 
+            kwargs: dict):
     """
     Calculate objective for a given pressure p, given a temperature T
     """

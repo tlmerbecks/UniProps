@@ -3,6 +3,7 @@ from itertools import combinations
 
 
 class phases(Enum):
+    none = "none"
     l = "liquid"
     g = "gaseous"   
     tp = "two-phase"
