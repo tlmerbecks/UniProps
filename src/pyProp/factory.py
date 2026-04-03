@@ -1,18 +1,9 @@
+from .utilities.errors import PackageError
+from .packages import PackageFactories
+
 from typing import TYPE_CHECKING
-
-from .errors import PackageError
-from .coolprop import CoolPropFactory
-# from .thermopack import thermopackFactory
-
-
 if TYPE_CHECKING:
-    from .base import BaseState
-
-
-PackageFactories = [
-    CoolPropFactory,
-    # thermopackFactory,
-    ]
+    from .pyProp_state import BaseState
 
 
 def State(state) -> "BaseState":

@@ -3,12 +3,12 @@ from typing import Dict, Callable, Tuple
 from .settings import DO_WORKAROUND
 from .settings import PMIN, PMAX
 
-from .constants import pairs, properties, phases, variables
-from .utils import inputs_to_default_inputs, pair_to_vars, vars_to_pair, var_to_property
+from .utilities.constants import pairs, properties, phases, variables
+from .utilities.conversions import inputs_to_default_inputs, pair_to_vars, vars_to_pair, var_to_property
 from scipy.optimize import root_scalar, minimize_scalar, minimize
 
-from .residuals import res_T_p, res_Q_p, res_p_T, res_Q_T, res_T_Q
-from .objectives import obj_p_T, obj_T_Q
+from .utilities.residuals import res_T_p, res_Q_p, res_p_T, res_Q_T, res_T_Q
+from .utilities.objectives import obj_p_T, obj_T_Q
 
 
 class BaseState:

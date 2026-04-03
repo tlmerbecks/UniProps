@@ -1,3 +1,3 @@
 from .factory import State
-from .constants import pairs
+from .utilities.constants import pairs
 

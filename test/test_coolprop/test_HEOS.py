@@ -1,6 +1,6 @@
 from pyProp import State
-from pyProp.constants import variables, _default_pairs, pairs
-from pyProp.utils import pair_to_vars
+from pyProp.utilities.constants import variables, _default_pairs, pairs
+from pyProp.utilities.conversions import pair_to_vars
 from pyProp.settings import DO_WORKAROUND
 
 import CoolProp as cp
@@ -40,6 +40,7 @@ def test_HEOS_calc_modes():
         val1, val2 = vals[var1], vals[var2]
 
         try:
+            print(pair, val1, val2)
             state.update(pair, val1, val2)
         except:
             assert pair in unsupported_pairs
