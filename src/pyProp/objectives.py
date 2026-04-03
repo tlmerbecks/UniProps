@@ -8,9 +8,9 @@ if TYPE_CHECKING:
 
 
 def obj_p_T(p: float, 
-            state: BaseState, 
+            state: "BaseState", 
             T: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             pcrit: float, 
             kwargs: dict):
@@ -27,9 +27,9 @@ def obj_p_T(p: float,
 
 
 def obj_T_Q(T: float, 
-            state: BaseState, 
+            state: "BaseState", 
             Q: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             pcrit: float, 
             kwargs: dict):

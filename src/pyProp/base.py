@@ -17,6 +17,10 @@ class BaseState:
     model: str
     eos: object
 
+    _components: list
+    _mole_fractions: list
+    _molar_masses: list
+
     def __init__(self):
 
         self._update_func_lookup: Dict[pairs, Callable] = {
@@ -83,6 +87,17 @@ class BaseState:
 
             properties.Tdew: self.Tdew,
             properties.pdew: self.pdew,
+
+            properties.xMr: self.xMr,
+            properties.yMr: self.yMr,
+            
+            properties.xmolar: self.xmolar,
+            properties.ymolar: self.ymolar,
+            properties.zmolar: self.zmolar,
+
+            properties.xmass: self.xmass,
+            properties.ymass: self.ymass,
+            properties.zmass: self.zmass,
             }
     
 
@@ -165,13 +180,34 @@ class BaseState:
 
     # utilities for converting between mass and molar based vapour quality
     def _Qmass_to_Qmolar(self, Qmass: float) -> float:
-        return Qmass * 1.
-    
+
+        Mr = self.Mr()
+        yMr = self.yMr()
+
+        return Qmass * (Mr/yMr)
+
     def _Qmolar_to_Qmass(self, Qmolar: float) -> float:
 
-        return Qmolar * 1.
+        Mr = self.Mr()
+        yMr = self.yMr()
+
+        return Qmolar * (yMr/Mr)
+    
+    def _massfrac_to_molefrac(self, massfrac:list[float], Mr) -> list[float]:
+
+        molefrac = [mi*Mr/Mri for mi, Mri in zip(massfrac, self._molar_masses)]
+
+        return molefrac
+    
+    def _molefrac_to_massfrac(self, molefrac:list[float], Mr) -> list[float]:
+
+        massfrac = [ni*Mri/Mr for ni, Mri in zip(molefrac, self._molar_masses)]
+
+        return massfrac
+    
 
 
+    # the definitions of the base calculation pairs
     def _DmolarHmolar(self, Dmolar: float, Hmolar: float, **kwargs) -> None:
         msg = f"The API for {self.package} does not implement yet a DmolarHmolar method for the {self.model} model"
         raise NotImplementedError
@@ -272,6 +308,7 @@ class BaseState:
         raise NotImplementedError
 
 
+    # the definitions of the workaround functions
     def _workaround(self, var1: variables, 
                     val1: float, 
                     var2: variables, 
@@ -478,7 +515,7 @@ class BaseState:
 
         return sol.converged
 
-
+    # definitions of the functions for retrieving various properties
     def get(self, property: properties, *args, unit=None, **kwargs):
 
         # check is pair is of the correct type, otherwise try to convert
@@ -758,4 +795,76 @@ class BaseState:
         self.update(pairs.QmolarT, 1, T, unit1=unit)
 
         return self.p()
+
+    def xMr(self, unit=None) -> float:
+        if not unit is None:
+            return self.get(properties.xMr, unit=unit)
         
+        return self._xMr()
+    
+    def _xMr(self) -> float:
+        return self.Mr()
+    
+    def yMr(self, unit=None) -> float:
+        if not unit is None:
+            return self.get(properties.yMr, unit=unit)
+        
+        return self._yMr()
+    
+    def _yMr(self) -> float:
+        return self.Mr()
+
+    def xmolar(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.xmolar, unit=unit)
+        
+        return self._xmolar()
+    
+    def _xmolar(self) -> list[float]:
+        return [1.]
+    
+    def xmass(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.xmass, unit=unit)
+        
+        return self._xmass()
+    
+    def _xmass(self) -> list[float]:
+        return [1.]
+    
+    def ymolar(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.ymolar, unit=unit)
+        
+        return self._ymolar()
+    
+    def _ymolar(self) -> list[float]:
+        return [1.]
+    
+    def ymass(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.ymass, unit=unit)
+        
+        return self._ymass()
+    
+    def _ymass(self) -> list[float]:
+        return [1.]
+
+
+    def zmolar(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.zmolar, unit=unit)
+        
+        return self._zmolar()
+    
+    def _zmolar(self) -> list[float]:
+        return [1.]
+    
+    def zmass(self, unit=None) -> list[float]:
+        if not unit is None:
+            return self.get(properties.zmass, unit=unit)
+        
+        return self._zmass()
+    
+    def _zmass(self) -> list[float]:
+        return [1.]

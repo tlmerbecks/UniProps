@@ -5,14 +5,18 @@ from .constants import (
     _pair_to_vars,
     _vars_to_pair,
     _default_pairs,
+
+    variables,
+    properties,
+    pairs
     )
 
-from typing import TYPE_CHECKING, Iterable, Tuple, Dict
+from typing import Iterable, Tuple, Dict, TYPE_CHECKING
 if TYPE_CHECKING:
-    from .constants import variables, properties, pairs 
+    from .constants import variables, properties, pairs
 
 
-def var_to_default_var(var: variables) -> variables:
+def var_to_default_var(var: "variables") -> "variables":
     return _var_to_default_var[var]
 
 

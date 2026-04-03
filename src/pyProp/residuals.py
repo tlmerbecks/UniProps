@@ -7,9 +7,9 @@ if TYPE_CHECKING:
 
 
 def res_p_T(p: float, 
-            state: BaseState, 
+            state: "BaseState", 
             T: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             kwargs: dict):
     """
@@ -23,9 +23,9 @@ def res_p_T(p: float,
 
 
 def res_T_p(T:float, 
-            state: BaseState, 
+            state: "BaseState", 
             p: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             kwargs: dict):
     """
@@ -36,9 +36,9 @@ def res_T_p(T:float,
 
 
 def res_Q_p(Q: float, 
-            state: BaseState, 
+            state: "BaseState", 
             p: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             kwargs: dict):
     """
@@ -51,9 +51,9 @@ def res_Q_p(Q: float,
     return res
 
 def res_Q_T(Q: float, 
-            state: BaseState, 
+            state: "BaseState", 
             T: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             kwargs: dict):
     """
@@ -67,9 +67,9 @@ def res_Q_T(Q: float,
     return res
 
 def res_T_Q(Q: float, 
-            state: BaseState, 
+            state: "BaseState", 
             T: float, 
-            prop: properties, 
+            prop: "properties", 
             y: float, 
             kwargs: dict):
     """

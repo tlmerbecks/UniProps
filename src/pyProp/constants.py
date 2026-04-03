@@ -165,7 +165,18 @@ class properties(Enum):
     Tcrit = "critical temperature"
     Tbubble = "bubble point temperature"
     Tdew = "dew point pressure"
+    
+    xMr = "molecular weight of liquid phase"
+    yMr = "molecular weight of vapour phase"
     Mr = "molecular weight"
+
+    xmolar = "mole fractions of liquid phase"
+    ymolar = "mole fractions of vapour phase"
+    zmolar = "mole fractions of fluid"
+
+    xmass = "mole fractions of liquid phase"
+    ymass = "mole fractions of vapour phase"
+    zmass = "mole fractions of fluid"
 
     Smass = "specific entropy"
     Hmass = "specific enthalpy"
