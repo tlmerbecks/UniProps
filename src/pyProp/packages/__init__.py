@@ -5,9 +5,3 @@ try:
     PackageFactories.append(CoolPropFactory)
 except:
     pass
-
-try:
-    from .thermopack import thermopackFactory  
-    PackageFactories.append(thermopackFactory)
-except:
-    pass

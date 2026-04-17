@@ -5,11 +5,11 @@ from .settings import PMIN, PMAX
 
 from .utilities.constants import pairs, properties, phases, variables
 from .utilities.conversions import inputs_to_default_inputs, pair_to_vars, vars_to_pair, var_to_property
-from scipy.optimize import root_scalar, minimize_scalar, minimize
-
 from .utilities.residuals import res_T_p, res_Q_p, res_p_T, res_Q_T, res_T_Q
 from .utilities.objectives import obj_p_T, obj_T_Q
+from .utilities.units import convert_to_SI, convert_from_SI
 
+from scipy.optimize import root_scalar, minimize_scalar, minimize
 
 class BaseState:
 
@@ -129,10 +129,12 @@ class BaseState:
 
         vals_SI = []
         for unit, val in zip((unit1, unit2), (val1, val2)):
-            if unit is None:
+            if unit is None: # value is assumed to be SI
                 pass
             else:
                 print(f"Converting {unit} to SI")
+
+                val = convert_to_SI(val, unit)
 
             vals_SI.append(val)
 
@@ -178,6 +180,7 @@ class BaseState:
 
         pass
 
+
     # utilities for converting between mass and molar based vapour quality
     def _Qmass_to_Qmolar(self, Qmass: float) -> float:
 
@@ -206,7 +209,6 @@ class BaseState:
         return massfrac
     
 
-
     # the definitions of the base calculation pairs
     def _DmolarHmolar(self, Dmolar: float, Hmolar: float, **kwargs) -> None:
         msg = f"The API for {self.package} does not implement yet a DmolarHmolar method for the {self.model} model"
@@ -232,7 +234,6 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a DmolarUmolar method for the {self.model} model"
         raise NotImplementedError
 
-
     def _HmolarP(self, Hmolar: float, p: float, **kwargs) -> None:
         msg = f"The API for {self.package} does not implement yet a HmolarP method for the {self.model} model"
         raise NotImplementedError
@@ -252,8 +253,7 @@ class BaseState:
     def _HmolarUmolar(self, Hmolar: float, Umolar: float, **kwargs) -> None:
         msg = f"The API for {self.package} does not implement yet a HmolarUmolar method for the {self.model} model"
         raise NotImplementedError
-    
-   
+       
     def _PQmolar(self, p: float, Qmolar: float, **kwargs) -> None:
 
         msg = f"The API for {self.package} does not implement yet a pQmolar method for the {self.model} model"
@@ -274,7 +274,6 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a pUmolar method for the {self.model} model"
         raise NotImplementedError
 
-
     def _QmolarSmolar(self, Qmolar: float, Smolar: float, **kwargs) -> None:
 
         msg = f"The API for {self.package} does not implement yet a QmolarSmolar method for the {self.model} model"
@@ -290,7 +289,6 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a QmolarT method for the {self.model} model"
         raise NotImplementedError
 
-
     def _SmolarT(self, Smolar: float, T: float, **kwargs) -> None:
 
         msg = f"The API for {self.package} does not implement yet a SmolarT method for the {self.model} model"
@@ -301,7 +299,6 @@ class BaseState:
         msg = f"The API for {self.package} does not implement yet a SmolarUmolar method for the {self.model} model"
         raise NotImplementedError
     
-
     def _TUmolar(self, T: float, Umolar: float, **kwargs) -> None:
 
         msg = f"The API for {self.package} does not implement yet a TUmolar method for the {self.model} model"
@@ -366,12 +363,10 @@ class BaseState:
             return sol.converged
         
         self._PQmolar(p, 0, **kwargs)
-        # self.update(pairs.pQmolar, p, 0, **kwargs)
         Tbubble = self.T()
         ybubble = self.get(prop)
 
         self._PQmolar(p, 1, **kwargs)
-        # self.update(pairs.pQmolar, p, 1, **kwargs)
         Tdew = self.T()
         ydew = self.get(prop)
 
@@ -515,8 +510,9 @@ class BaseState:
 
         return sol.converged
 
+
     # definitions of the functions for retrieving various properties
-    def get(self, property: properties, *args, unit=None, **kwargs):
+    def get(self, property: properties, *args, unit=None, **kwargs) -> float:
 
         # check is pair is of the correct type, otherwise try to convert
         if not isinstance(property, properties):
@@ -533,11 +529,12 @@ class BaseState:
         if unit is None:
             var = var_SI
         else:
-            # need to convert the units
-            print("converting SI to unit")
-            var = var_SI * 1
+            if isinstance(var_SI, list):
+                var = [convert_from_SI(val, unit) for val in var_SI]
+            else:
+                var = convert_from_SI(var_SI, unit)
 
-        return var
+        return var  # type: ignore
 
 
     def pcrit(self, unit=None) -> float:
@@ -816,7 +813,7 @@ class BaseState:
 
     def xmolar(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.xmolar, unit=unit)
+            return self.get(properties.xmolar, unit=unit)  # type:ignore
         
         return self._xmolar()
     
@@ -825,7 +822,7 @@ class BaseState:
     
     def xmass(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.xmass, unit=unit)
+            return self.get(properties.xmass, unit=unit)  # type:ignore
         
         return self._xmass()
     
@@ -834,7 +831,7 @@ class BaseState:
     
     def ymolar(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.ymolar, unit=unit)
+            return self.get(properties.ymolar, unit=unit)  # type:ignore
         
         return self._ymolar()
     
@@ -843,7 +840,7 @@ class BaseState:
     
     def ymass(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.ymass, unit=unit)
+            return self.get(properties.ymass, unit=unit)  # type:ignore
         
         return self._ymass()
     
@@ -853,7 +850,7 @@ class BaseState:
 
     def zmolar(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.zmolar, unit=unit)
+            return self.get(properties.zmolar, unit=unit)  # type:ignore
         
         return self._zmolar()
     
@@ -862,7 +859,7 @@ class BaseState:
     
     def zmass(self, unit=None) -> list[float]:
         if not unit is None:
-            return self.get(properties.zmass, unit=unit)
+            return self.get(properties.zmass, unit=unit)  # type:ignore
         
         return self._zmass()
     

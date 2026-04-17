@@ -3,6 +3,7 @@ from pyProp.utilities.constants import (
     variables,
     properties
     )
+
 from pyProp.utilities.conversions import (
     pair_to_vars,
     vars_to_pair,
@@ -73,22 +74,24 @@ def test_inputs_to_default_inputs_PT():
     assert dinputs2["conv"] == None
 
 def test_inputs_to_default_inputs_SH():
+    smolar = 10
+    hmass = 20000
 
     # test SmolarHmass pair
     pair  = pairs.SmolarHmass
-    vals = ("s", "h")
+    vars = (smolar, hmass)
     
-    dinputs = inputs_to_default_inputs(pair, vals)
+    dinputs = inputs_to_default_inputs(pair, vars)
     assert dinputs[0] == pairs.HmolarSmolar
 
     dinputs1 = dinputs[1]
     assert dinputs1["var"] == variables.Hmolar
-    assert dinputs1["val"] == "h"
+    assert dinputs1["val"] == hmass
     assert dinputs1["conv"] == 1
 
     dinputs2 = dinputs[2]
     assert dinputs2["var"] == variables.Smolar
-    assert dinputs2["val"] == "s"
+    assert dinputs2["val"] == smolar
     assert dinputs2["conv"] == None  # no conversion is needed as Smolar is already the default var
 
 
