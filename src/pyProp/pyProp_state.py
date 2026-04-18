@@ -1,7 +1,8 @@
 from typing import Dict, Callable, Tuple, Any
 
-from .settings import DO_WORKAROUND
-from .settings import PMIN, PMAX
+from . import settings
+# from .settings import DO_WORKAROUND
+# from .settings import PMIN, PMAX
 
 from .utilities.constants import pairs, properties, phases, variables
 from .utilities.conversions import inputs_to_default_inputs, pair_to_vars, vars_to_pair, var_to_property
@@ -140,7 +141,7 @@ class BaseState:
             msg = f"WARNING! Package \"{self.package}\" with model \"{self.model}\" has raised an error \"{e}\"."
             print(msg)
 
-            if DO_WORKAROUND:
+            if settings.DO_WORKAROUND:
                 try:
                     print("Attempting to workaround...")
                     result = self._workaround(var1, val1_SI, var2, val2_SI, **kwargs)
@@ -161,8 +162,6 @@ class BaseState:
             if unit is None: # value is assumed to be SI
                 pass
             else:
-                print(f"Converting {unit} to SI")
-
                 val = convert_to_SI(val, unit)
 
             vals_SI.append(val)
@@ -344,14 +343,14 @@ class BaseState:
                     **kwargs):
 
         if pmin is None:
-            pmin = PMIN
-        elif pmin < PMIN:
-            pmin = PMIN
+            pmin = settings.PMIN
+        elif pmin < settings.PMIN:
+            pmin = settings.PMIN
 
         if pmax is None:
-            pmax = PMAX
-        elif pmax > PMAX:
-            pmax = PMAX
+            pmax = settings.PMAX
+        elif pmax > settings.PMAX:
+            pmax = settings.PMAX
 
         vars = (var1, var2)
         vals = (val1, val2)
@@ -452,11 +451,11 @@ class BaseState:
         if (ymax - y) * (y - ybubble) > 0:
             # liquid phase - between (T, Q=0) and (T, p=pmax)
             if prop in tricky_TY:
-                sol = minimize_scalar(obj_p_T, args=(self, T, prop, y, pcrit, kwargs), bounds=[pbubble * (1 + 1e-6), pmax])
+                sol = minimize_scalar(obj_p_T, args=(self, T, prop, y, pcrit, kwargs), bounds=[pbubble * (1 + 1.1e-6), pmax])
 
                 return sol.success  # type: ignore
             else:
-                sol = root_scalar(res_p_T, args=(self, T, prop, y, kwargs), method="brentq", bracket=[pbubble * (1 + 1e-6), pmax])
+                sol = root_scalar(res_p_T, args=(self, T, prop, y, kwargs), method="brentq", bracket=[pbubble * (1 + 1.1e-6), pmax])
 
                 return sol.converged
         
@@ -473,11 +472,11 @@ class BaseState:
             # vapor phase - between (T, Q=1) and (T, p=pmin)
 
             if prop in tricky_TY:
-                sol = minimize_scalar(obj_p_T, args=(self, T, prop, y, pcrit, kwargs), bounds=[pdew * (1 - 1e-6), pmin])
+                sol = minimize_scalar(obj_p_T, args=(self, T, prop, y, pcrit, kwargs), bounds=[pdew * (1 - 1.1e-6), pmin])
 
                 return sol.success  # type: ignore
             else:
-                sol = root_scalar(res_p_T, args=(self, T, prop, y, kwargs), method="brentq", bracket=[pdew * (1 - 1e-6), pmin])
+                sol = root_scalar(res_p_T, args=(self, T, prop, y, kwargs), method="brentq", bracket=[pdew * (1 - 1.1e-6), pmin])
 
                 return sol.converged
         
