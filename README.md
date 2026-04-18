@@ -1,2 +1,2 @@
-# pyProp
+# pyProps
 Unified fluid modelling library 

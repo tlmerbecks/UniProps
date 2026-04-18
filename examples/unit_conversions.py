@@ -1,5 +1,5 @@
 import CoolProp as cp
-from pyProp import State, pairs
+from pyProps import State, pairs
 
 cp_state = cp.AbstractState("HEOS", "Water")
 

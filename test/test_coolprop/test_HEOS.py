@@ -1,7 +1,7 @@
-from pyProp import State
-from pyProp.utilities.constants import variables, _default_pairs, pairs
-from pyProp.utilities.conversions import pair_to_vars
-from pyProp.settings import DO_WORKAROUND
+from pyProps import State
+from pyProps.utilities.constants import variables, _default_pairs, pairs
+from pyProps.utilities.conversions import pair_to_vars
+from pyProps.settings import DO_WORKAROUND
 
 import CoolProp as cp
 

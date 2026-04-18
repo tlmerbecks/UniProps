@@ -2,7 +2,7 @@ from numpy import log10
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..pyProp_state import BaseState
+    from ..pyProps_state import BaseState
     from .constants import properties
 
 

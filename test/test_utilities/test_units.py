@@ -1,4 +1,4 @@
-from pyProp.utilities.units import (
+from pyProps.utilities.units import (
     convert_to_SI,
     convert_from_SI
     )
