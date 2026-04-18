@@ -15,6 +15,41 @@ phases_map = {
 
 class CoolPropState(BaseState):
 
+    r"""
+    The wrapper for :code:`CoolProp.AbstractState` classes
+
+    Parameters
+    ----------
+    state: cp.AbstractState
+        The CoolProp AbstractState to be wrapped
+    model_type: str
+        The backend used
+    
+    Note:
+    -----
+    CoolProp generally supports the following calculation modes. That said, not 
+    all CoolProp backends support all calculation modes:
+    * DH
+    * DP
+    * DQ
+    * DS
+    * DT
+    * DU
+    * HP
+    * HQ
+    * HS
+    * HT
+    * PQ
+    * PS
+    * PT
+    * QS
+    * QT
+
+    CoolProp does not support the following calculation modes:    
+    * HU
+    * QU
+    """
+
     def __init__(self, state: cp.AbstractState, model_type:str):
         super().__init__()
 

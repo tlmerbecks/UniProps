@@ -154,7 +154,6 @@ class properties(Enum):
     T = "temperature"
     Q = "quality"
     D = "density"
-    Dcrit = "critical density"
     s = "entropy"
     h = "enthalpy"
     u = "internal energy"

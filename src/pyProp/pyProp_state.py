@@ -1,4 +1,4 @@
-from typing import Dict, Callable, Tuple
+from typing import Dict, Callable, Tuple, Any
 
 from .settings import DO_WORKAROUND
 from .settings import PMIN, PMAX
@@ -12,6 +12,10 @@ from .utilities.units import convert_to_SI, convert_from_SI
 from scipy.optimize import root_scalar, minimize_scalar, minimize
 
 class BaseState:
+
+    r"""
+    Class BaseState is the base class for all package wrapper classes.
+    """
 
     package: str
     model: str
@@ -76,7 +80,6 @@ class BaseState:
 
             properties.Tcrit: self.Tcrit,
             properties.pcrit: self.pcrit,
-            properties.Dcrit: self.Dcrit,
             properties.Dmass_crit: self.Dmass_crit,
             properties.Dmolar_crit: self.Dmolar_crit,
 
@@ -101,7 +104,33 @@ class BaseState:
             }
     
 
-    def update(self, pair, val1, val2, unit1=None, unit2=None, **kwargs) -> None:
+    def update(self, pair: pairs | str, val1: float, val2: float, unit1: str | None =None, unit2: str | None=None, **kwargs) -> None:
+        r"""
+        Update the state of fluid
+
+        Parameters
+        ----------
+        pair: pairs | str
+            The pair of state variables to be used for the update
+        val1: float
+            The value of the state variable 1
+        val2: float
+            The value of the state variable 2
+        unit1: str | None, optional
+            The unit of state variable 1. Default is None, i.e. assuming SI units
+        unit2: str | None, optional
+            The unit of state variable 2. Default is None, i.e. assuming SI units
+        **kwargs: Any
+            The keyword arguments depend on the specific package used
+
+        Note
+        ----
+        Not all packages support all calculation modes. By default, if an update 
+        on a natively unsupported pair is called, an error is raised. 
+        Nevertheless, workaround methods have been implemented to attempt to 
+        calculate the requested state pair using the natively supported state 
+        pairs. To enable this, set :code:`pyProp.settings.DO_WORKAROUND=True`.
+        """
 
         func, var1, val1_SI, var2, val2_SI = self._preprocess(pair, val1, unit1, val2, unit2)
 
@@ -125,7 +154,7 @@ class BaseState:
 
         return self._postprocess(result)
     
-    def _preprocess(self, pair, val1, unit1, val2, unit2) -> Tuple[Callable, variables, float, variables, float]:
+    def _preprocess(self, pair: pairs | str, val1: float, unit1: str | None, val2: float, unit2: str | None) -> Tuple[Callable, variables, float, variables, float]:
 
         vals_SI = []
         for unit, val in zip((unit1, unit2), (val1, val2)):
@@ -512,7 +541,33 @@ class BaseState:
 
 
     # definitions of the functions for retrieving various properties
-    def get(self, property: properties, *args, unit=None, **kwargs) -> float:
+    def get(self, property: properties | str, *args: Any, unit: str | None=None, **kwargs: Any) -> float:
+        r"""
+        Get a property of the current state of the fluid
+
+        Parameters
+        ----------
+        property : properties | str
+            The property to be evaluated
+        *args: Any
+            Additional arguments that may be required. For example, obtaining the 
+            saturation temperature/pressure, also requires an input of a the 
+            pressure/temperature
+        unit: str | None, optional
+            The unit in which the property should be retrieved. Default is None, i.e. assuming SI units
+        **kwargs: Any
+            The keyword arguments depend on the specific package used
+
+        Returns
+        -------
+        float
+            The value of the property.
+
+        Note
+        ----
+        Some properties may not strictly return a float. For example, retrieving 
+        the mole fractions, will instead return List[float] 
+        """
 
         # check is pair is of the correct type, otherwise try to convert
         if not isinstance(property, properties):
@@ -529,6 +584,9 @@ class BaseState:
         if unit is None:
             var = var_SI
         else:
+            # TODO an additional check is needed to verify that the specified 
+            # units are indeed dimensionally consistent with the property to 
+            # be obtained.
             if isinstance(var_SI, list):
                 var = [convert_from_SI(val, unit) for val in var_SI]
             else:
@@ -537,7 +595,19 @@ class BaseState:
         return var  # type: ignore
 
 
-    def pcrit(self, unit=None) -> float:
+    def pcrit(self, unit: str | None=None) -> float:
+        r"""
+        Get the critical pressure of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.pcrit, unit=unit)
         
@@ -547,7 +617,19 @@ class BaseState:
         return -1.
 
 
-    def Tcrit(self, unit=None) -> float:
+    def Tcrit(self, unit: str | None=None) -> float:
+        r"""
+        Get the critical temperature of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Tcrit, unit=unit)
         
@@ -557,16 +639,19 @@ class BaseState:
         return -1.
 
 
-    def Dcrit(self, unit=None) -> float:
-        if not unit is None:
-            return self.get(properties.Dcrit, unit=unit)
-        
-        return self._Dcrit()
-    
-    def _Dcrit(self) -> float:
-        return -1.
+    def Dmass_crit(self, unit: str | None=None) -> float:
+        r"""
+        Get the critical density of the fluid
 
-    def Dmass_crit(self, unit=None) -> float:
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Dmass_crit, unit=unit)
         
@@ -575,7 +660,19 @@ class BaseState:
     def _Dmass_crit(self) -> float:
         return -1.
 
-    def Dmolar_crit(self, unit=None) -> float:
+    def Dmolar_crit(self, unit: str | None=None) -> float:
+        r"""
+        Get the critical molar density of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Dmolar_crit, unit=unit)
         
@@ -585,7 +682,19 @@ class BaseState:
         return -1.
     
 
-    def Mr(self, unit=None) -> float:
+    def Mr(self, unit: str | None=None) -> float:
+        r"""
+        Get the molar mass of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Mr, unit=unit)
         
@@ -595,7 +704,19 @@ class BaseState:
         return -1.
 
 
-    def p(self, unit=None) -> float:
+    def p(self, unit: str | None=None) -> float:
+        r"""
+        Get the pressure of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.p, unit=unit)
         
@@ -605,7 +726,19 @@ class BaseState:
         return -1
 
 
-    def T(self, unit=None) -> float:
+    def T(self, unit: str | None=None) -> float:
+        r"""
+        Get the temperature of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.T, unit=unit)
         
@@ -615,13 +748,37 @@ class BaseState:
         return -1.
 
     
-    def Qmass(self, unit=None) -> float:
+    def Qmass(self, unit: str | None=None) -> float:
+        r"""
+        Get the mass-based vapour quality of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Qmass, unit=unit)
         
         return self._Qmolar_to_Qmass(self.Qmolar())
     
-    def Qmolar(self, unit=None) -> float:
+    def Qmolar(self, unit: str | None=None) -> float:
+        r"""
+        Get the mole-based vapour quality of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Qmolar, unit=unit)
 
@@ -640,7 +797,19 @@ class BaseState:
         return -1
     
 
-    def Dmass(self, unit=None) -> float:
+    def Dmass(self, unit: str | None=None) -> float:
+        r"""
+        Get the density quality of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Dmass, unit=unit)
         
@@ -650,6 +819,18 @@ class BaseState:
         return -1.
 
     def Dmolar(self, unit=None) -> float:
+        r"""
+        Get the molar density of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Dmolar, unit=unit)
         
@@ -659,7 +840,19 @@ class BaseState:
         return -1.
 
 
-    def vmass(self, unit=None) -> float:
+    def vmass(self, unit: str | None=None) -> float:
+        r"""
+        Get the specific volume of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Vmass, unit=unit)
         
@@ -668,7 +861,19 @@ class BaseState:
     def _vmass(self) -> float:
         return 1 / self._Dmass()
 
-    def vmolar(self, unit=None) -> float:
+    def vmolar(self, unit: str | None=None) -> float:
+        r"""
+        Get the molar volume of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Vmolar, unit=unit)
         
@@ -678,7 +883,19 @@ class BaseState:
         return 1 / self._Dmolar()
 
 
-    def hmass(self, unit=None) -> float:
+    def hmass(self, unit: str | None=None) -> float:
+        r"""
+        Get the specific enthalpy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Hmass, unit=unit)
         
@@ -687,7 +904,19 @@ class BaseState:
     def _hmass(self) -> float:
         return -1.
 
-    def hmolar(self, unit=None) -> float:
+    def hmolar(self, unit: str | None=None) -> float:
+        r"""
+        Get the molar enthalpy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Hmolar, unit=unit)
         
@@ -697,7 +926,19 @@ class BaseState:
         return -1.
 
 
-    def smass(self, unit=None) -> float:
+    def smass(self, unit: str | None=None) -> float:
+        r"""
+        Get the specific entropy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Smass, unit=unit)
         
@@ -706,7 +947,19 @@ class BaseState:
     def _smass(self) -> float:
         return -1.
 
-    def smolar(self, unit=None) -> float:
+    def smolar(self, unit: str | None=None) -> float:
+        r"""
+        Get the molar entropy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Smolar, unit=unit)
         
@@ -716,7 +969,19 @@ class BaseState:
         return -1.
 
 
-    def umass(self, unit=None) -> float:
+    def umass(self, unit: str | None=None) -> float:
+        r"""
+        Get the specific internal energy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Umass, unit=unit)
         
@@ -725,7 +990,19 @@ class BaseState:
     def _umass(self) -> float:
         return -1.
 
-    def umolar(self, unit=None) -> float:
+    def umolar(self, unit: str | None=None) -> float:
+        r"""
+        Get the molar internal energy of the fluid
+
+        Parameters
+        ----------
+        unit: str | None
+            The unit of the return value
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.Umolar, unit=unit)
         
@@ -735,14 +1012,37 @@ class BaseState:
         return -1.
 
 
-    def phase(self, **kwargs) -> phases:
+    def phase(self) -> phases:
+        r"""
+        Get the phase of the fluid
+
+        Returns
+        -------
+        phases 
+        """
         return self._phase()
     
     def _phase(self) -> phases:
         return phases.none
 
 
-    def Tbubble(self, p, unit=None, punit=None) -> float:
+    def Tbubble(self, p: float, unit: str|None=None, punit: str|None=None) -> float:
+        r"""
+        Get the bubble point temperature of the fluid
+
+        Parameters
+        ----------
+        p: float
+            The pressure
+        unit: str|None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+        punit: str|None, optional
+            The unit of the pressure value. Default is None, i.e. assuming SI        
+
+        Returns
+        -------
+        float
+        """
         if not unit is None:
             return self.get(properties.Tbubble, unit=unit)
                 
@@ -755,7 +1055,23 @@ class BaseState:
         return self.T()
 
 
-    def pbubble(self, T, unit=None, Tunit=None) -> float:
+    def pbubble(self, T: float, unit: str|None=None, Tunit: str|None=None) -> float:
+        r"""
+        Get the bubble point pressure of the fluid
+
+        Parameters
+        ----------
+        T: float
+            The temperature
+        unit: str|None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+        Tunit: str|None, optional
+            The unit of the temperature value. Default is None, i.e. assuming SI        
+
+        Returns
+        -------
+        float
+        """
         if not unit is None:
             return self.get(properties.pbubble, unit=unit)
         
@@ -768,7 +1084,23 @@ class BaseState:
         return self.p()
 
 
-    def Tdew(self, p, unit=None, punit=None) -> float:
+    def Tdew(self, p, unit: str|None=None, punit: str|None=None) -> float:
+        r"""
+        Get the dew point temperature of the fluid
+
+        Parameters
+        ----------
+        p: float
+            The pressure
+        unit: str|None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+        punit: str|None, optional
+            The unit of the pressure value. Default is None, i.e. assuming SI        
+
+        Returns
+        -------
+        float
+        """
         if not unit is None:
             return self.get(properties.Tdew, unit=unit)
         
@@ -781,7 +1113,23 @@ class BaseState:
         return self.T()
 
 
-    def pdew(self, T, unit=None, Tunit=None, **kwargs) -> float:
+    def pdew(self, T, unit: str|None=None, Tunit: str|None=None, **kwargs) -> float:
+        r"""
+        Get the dew point pressure of the fluid
+
+        Parameters
+        ----------
+        T: float
+            The temperature
+        unit: str|None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+        Tunit: str|None, optional
+            The unit of the pressure value. Default is None, i.e. assuming SI        
+
+        Returns
+        -------
+        float
+        """
         if not unit is None:
             return self.get(properties.pdew, unit=unit)
         
@@ -793,7 +1141,19 @@ class BaseState:
 
         return self.p()
 
-    def xMr(self, unit=None) -> float:
+    def xMr(self, unit: str|None=None) -> float:
+        r"""
+        Get the molar mass of the liquid phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.xMr, unit=unit)
         
@@ -802,7 +1162,19 @@ class BaseState:
     def _xMr(self) -> float:
         return self.Mr()
     
-    def yMr(self, unit=None) -> float:
+    def yMr(self, unit: str|None=None) -> float:
+        r"""
+        Get the molar mass of the vapour phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        float 
+        """
         if not unit is None:
             return self.get(properties.yMr, unit=unit)
         
@@ -811,7 +1183,19 @@ class BaseState:
     def _yMr(self) -> float:
         return self.Mr()
 
-    def xmolar(self, unit=None) -> list[float]:
+    def xmolar(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mole fractions of the liquid phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.xmolar, unit=unit)  # type:ignore
         
@@ -820,7 +1204,19 @@ class BaseState:
     def _xmolar(self) -> list[float]:
         return [1.]
     
-    def xmass(self, unit=None) -> list[float]:
+    def xmass(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mass fractions of the liquid phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.xmass, unit=unit)  # type:ignore
         
@@ -829,7 +1225,19 @@ class BaseState:
     def _xmass(self) -> list[float]:
         return [1.]
     
-    def ymolar(self, unit=None) -> list[float]:
+    def ymolar(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mole fractions of the vapour phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.ymolar, unit=unit)  # type:ignore
         
@@ -838,7 +1246,19 @@ class BaseState:
     def _ymolar(self) -> list[float]:
         return [1.]
     
-    def ymass(self, unit=None) -> list[float]:
+    def ymass(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mass fractions of the vapour phase of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.ymass, unit=unit)  # type:ignore
         
@@ -848,7 +1268,19 @@ class BaseState:
         return [1.]
 
 
-    def zmolar(self, unit=None) -> list[float]:
+    def zmolar(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mole fractions of the the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.zmolar, unit=unit)  # type:ignore
         
@@ -857,7 +1289,19 @@ class BaseState:
     def _zmolar(self) -> list[float]:
         return [1.]
     
-    def zmass(self, unit=None) -> list[float]:
+    def zmass(self, unit: str|None=None) -> list[float]:
+        r"""
+        Get the mass fractions of the fluid
+
+        Parameters
+        ----------
+        unit: str | None, optional
+            The unit of the return value. Default is None, i.e. assuming SI
+
+        Returns
+        -------
+        list[float] 
+        """
         if not unit is None:
             return self.get(properties.zmass, unit=unit)  # type:ignore
         
