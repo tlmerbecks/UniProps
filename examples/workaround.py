@@ -56,13 +56,3 @@ except Exception as e:
 print(f"p0: {p0:.4e} p:{state.p():.4e}")
 print(f"T0: {T0:.4e} T:{state.T():.4e}")
 print(f"hmass0: {h0:.4e} hmass:{state.hmass():.4e}")
-
-
-
-
-
-
-
-
-# Where multiple solutions exist, pyProp tries to find the maximum pressure
-# state that honours the conditions.  
