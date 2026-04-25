@@ -210,6 +210,7 @@ _default_variables = [
 _default_pairs = [
     pairs.DmolarHmolar,
     pairs.DmolarP,
+    pairs.DmolarQmolar,
     pairs.DmolarSmolar,
     pairs.DmolarT     ,
     pairs.DmolarUmolar,

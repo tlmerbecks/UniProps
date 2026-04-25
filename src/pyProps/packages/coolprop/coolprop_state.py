@@ -80,11 +80,13 @@ class CoolPropState(BaseState):
     def _DmolarUmolar(self, Dmolar, Umolar, **kwargs):
         self.eos.update(cp.DmolarUmolar_INPUTS, Dmolar, Umolar)
 
-
     def _HmolarP(self, Hmolar, p, **kwargs):
         self.eos.update(cp.HmolarP_INPUTS, Hmolar, p)
 
     def _HmolarQmolar(self, Hmolar, Qmolar, **kwargs):
+        if self.Qmolar != 1:
+            raise ValueError("CoolProp only supports h-Q calculations for Q=1")
+        
         self.eos.update(cp.HmolarQ_INPUTS, Hmolar, Qmolar)
 
     def _HmolarSmolar(self, Hmolar, Smolar, **kwargs):
@@ -112,6 +114,8 @@ class CoolPropState(BaseState):
 
 
     def _QmolarSmolar(self, Qmolar, Smolar, **kwargs):
+        if Qmolar != 0 and Qmolar != 1:
+            raise ValueError("CoolProp only supports Q-s calculations for Q=0 or Q=1")
 
         self.eos.update(cp.QSmolar_INPUTS, Qmolar, Smolar)
 

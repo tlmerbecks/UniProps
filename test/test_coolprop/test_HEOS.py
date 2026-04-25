@@ -1,13 +1,14 @@
 from pyProps import State
 from pyProps.utilities.constants import variables, _default_pairs, pairs
 from pyProps.utilities.conversions import pair_to_vars
-from pyProps.settings import DO_WORKAROUND
+from pyProps import settings
 
 import CoolProp as cp
+import numpy as np
 
 
 def test_HEOS_calc_modes():
-    DO_WORKAROUND = False
+    settings.DO_WORKAROUND = False
 
     fld = cp.AbstractState("HEOS", "Water")
     fld.update(cp.PT_INPUTS, 101325, 350)
@@ -24,9 +25,9 @@ def test_HEOS_calc_modes():
 
     unsupported_pairs = (  # CoolProp does not yet support these calculation pairs
         pairs.HmolarT,
-        pairs.HmolarQmolar,
+        pairs.HmolarQmolar,  # supposedly supported for Q=1, but does not seem so...
         pairs.HmolarUmolar,
-        pairs.QmolarSmolar,  # supposedly supported for Q=0 and Q=1, but does not seem so...
+        pairs.QmolarSmolar,  # supposedly supported for Q=0 and Q=1
         pairs.QmolarUmolar,
         pairs.SmolarUmolar,
         pairs.TUmolar
@@ -46,6 +47,4 @@ def test_HEOS_calc_modes():
             assert pair in unsupported_pairs
 
             continue
-
-        
 
