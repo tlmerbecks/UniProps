@@ -1,7 +1,7 @@
 import CoolProp as cp
 
 from .coolprop_state import CoolPropState
-from pyProps.utilities.errors import PackageError
+from UniProps.utilities.errors import PackageError
 
 
 def CoolPropFactory(state):

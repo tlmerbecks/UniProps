@@ -3,7 +3,7 @@ from .packages import PackageFactories
 
 from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
-    from .pyProps_state import BaseState
+    from .UniProps_state import BaseState
 
 
 def State(state: Any) -> "BaseState":

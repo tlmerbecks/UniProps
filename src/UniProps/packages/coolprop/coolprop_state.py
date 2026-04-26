@@ -1,6 +1,6 @@
 import CoolProp as cp
-from pyProps.pyProps_state import BaseState
-from pyProps.utilities.constants import phases
+from UniProps.UniProps_state import BaseState
+from UniProps.utilities.constants import phases
 
 
 phases_map = {

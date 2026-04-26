@@ -1,11 +1,11 @@
-# pyProps - unified API for fluid modelling
+# UniProps - unified API for fluid modelling
 
-There are a number of popular fluid modelling libraries (e.g. CoolProp, REFPROP, fluidprop, thermopack, etc.), however they each implement a different API for orchestrating calculations. This makes it difficult to seamlessly switch between fluid models without implementing a custom wrapper. pyProps aims to provide that wrapper and standardise the workflow for instantiating fluid models, performing calculations and retrieving properties.
+There are a number of popular fluid modelling libraries (e.g. CoolProp, REFPROP, fluidprop, thermopack, etc.), however they each implement a different API for orchestrating calculations. This makes it difficult to seamlessly switch between fluid models without implementing a custom wrapper. UniProps aims to provide that wrapper and standardise the workflow for instantiating fluid models, performing calculations and retrieving properties.
 
 # Installation
 
 ```
-pip install pyProps
+pip install UniProps
 ```
 
 # Features
@@ -17,6 +17,7 @@ pip install pyProps
 * Evaluate state properties: density, enthalpy, entropy, internal energy, pressure, quality, temperature, volume - both molar and mass-based; bubble-point pressure/temperature, dew-point pressure/temperature; total/vapour/liquid phase molecular weight, mass fraction, mole fraction
 
 # Roadmap
+* Creating wrapped fluid states directly
 * Add additional libraries
     - fluidprop
     - thermopack
@@ -29,11 +30,11 @@ pip install pyProps
 
 ## Wrapping Fluid Models
 
-Create a fluid representation in your preferred fluid modelling library, then apply the pyProps wrapper:
+Create a fluid representation in your preferred fluid modelling library, then apply the UniProps wrapper:
 
 ```
 import CoolProp as cp
-from pyProps import State, pairs
+from UniProps import State, pairs
 
 cp_state = cp.AbstractState("HEOS", "Water")
 
@@ -48,7 +49,7 @@ print(state.hmass())
 
 ## Handling of missing calculation modes
 
-A fluid modelling libraries may not support all combinations of state variable pairs; for example, the CoolProp SRK backend does not support enthalpy-pressure calculations, see [website](https://coolprop.org/coolprop/Cubics.html#caveats) and [github](https://github.com/CoolProp/CoolProp/blob/a3a8040360b8869d64b8438a56d730d7d35eeac4/src/Backends/Cubics/CubicBackend.cpp#L321). Until now, if we wanted to perform such a calculation we would have to implement a custom routine - within pyProps these routines have already been implemented.
+A fluid modelling libraries may not support all combinations of state variable pairs; for example, the CoolProp SRK backend does not support enthalpy-pressure calculations, see [website](https://coolprop.org/coolprop/Cubics.html#caveats) and [github](https://github.com/CoolProp/CoolProp/blob/a3a8040360b8869d64b8438a56d730d7d35eeac4/src/Backends/Cubics/CubicBackend.cpp#L321). Until now, if we wanted to perform such a calculation we would have to implement a custom routine - within UniProps these routines have already been implemented.
 
 The following will raise an error as the enthalpy-pressure calcualtion is not supported
 ```
@@ -65,12 +66,12 @@ hmass = fld.hmass()
 fld.update(cp.HmassP_INPUTS, hmass, p)
 ```
 
-To perform this calculation with pyProps, we wrap the fluid model and set `pyProps.settings.DO_WORKAROUND=True`
+To perform this calculation with UniProps, we wrap the fluid model and set `UniProps.settings.DO_WORKAROUND=True`
 ```
-from pyProps import State, pairs
+from UniProps import State, pairs
 state = State(fld)
 
-from pyProps import settings
+from UniProps import settings
 settings.DO_WORKAROUND = True
 
 state.update(pairs.HmassP, hmass, p)
@@ -78,15 +79,15 @@ state.update(pairs.HmassP, hmass, p)
 print(T, state.T())
 ```
 
-Moreover, some calculation modes may not yield a unique solution, e.g. enthalpy-temperature calculations may have multiple solutions. In this case the pyProps solver tries to find the solutions with the maximum pressure.
+Moreover, some calculation modes may not yield a unique solution, e.g. enthalpy-temperature calculations may have multiple solutions. In this case the UniProps solver tries to find the solutions with the maximum pressure.
 
 In the following case, the initial state corresponds to the maximum pressure state, hence the initial and final pressure are the same,
 ```
 import CoolProp as cp
 fld = cp.AbstractState("HEOS", "water")
 
-from pyProps import State, pairs
-from pyProps import settings
+from UniProps import State, pairs
+from UniProps import settings
 settings.DO_WORKAROUND = True
 
 state = State(fld)

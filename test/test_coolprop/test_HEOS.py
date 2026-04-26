@@ -1,7 +1,7 @@
-from pyProps import State
-from pyProps.utilities.constants import variables, _default_pairs, pairs
-from pyProps.utilities.conversions import pair_to_vars
-from pyProps import settings
+from UniProps import State
+from UniProps.utilities.constants import variables, _default_pairs, pairs
+from UniProps.utilities.conversions import pair_to_vars
+from UniProps import settings
 
 import CoolProp as cp
 import numpy as np

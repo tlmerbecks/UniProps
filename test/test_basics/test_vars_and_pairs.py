@@ -1,10 +1,10 @@
-from pyProps.utilities.constants import (
+from UniProps.utilities.constants import (
     pairs,
     variables,
     properties
     )
 
-from pyProps.utilities.conversions import (
+from UniProps.utilities.conversions import (
     pair_to_vars,
     vars_to_pair,
     pair_to_default_pair,

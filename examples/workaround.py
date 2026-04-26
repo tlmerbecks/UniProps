@@ -1,5 +1,5 @@
 import CoolProp as cp
-from pyProps import State, pairs
+from UniProps import State, pairs
 
 cp_state = cp.AbstractState("HEOS", "Water")
 
@@ -20,7 +20,7 @@ except Exception as e:
 
 # pyProp can attempt to workaround unsupported calculation modes, but first we
 # need to activate this option
-from pyProps import settings
+from UniProps import settings
 settings.DO_WORKAROUND = True
 
 try:
