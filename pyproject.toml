@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "UniProps"
+authors = [
+    {name = "Tristan Merbecks", email = "tristan.merbecks@gmail.com"},
+]
+description = "A unified interface for using fluid modelling packages"
+readme = "README.md"
+dependencies = [
+    "numpy",
+    "pint",
+    "scipy"
+]
+dynamic = ["version"]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/tlmerbecks/UniProps"
+Issues = "https://github.com/tlmerbecks/UniProps/issues"
