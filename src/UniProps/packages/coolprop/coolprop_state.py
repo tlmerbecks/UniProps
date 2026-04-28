@@ -206,18 +206,16 @@ class CoolPropState(BaseState):
         
     def _xmass(self) -> list[float]:
         xmolar = self.eos.mole_fractions_liquid()
-        xMr = self.xMr()
 
-        return self._molefrac_to_massfrac(xmolar, xMr)
+        return self._molefrac_to_massfrac(xmolar)
         
     def _ymolar(self) -> list[float]:
         return self.eos.mole_fractions_vapor()
     
     def _ymass(self) -> list[float]:
         ymolar = self.eos.mole_fractions_vapor()
-        yMr = self.yMr()
 
-        return self._molefrac_to_massfrac(ymolar, yMr)
+        return self._molefrac_to_massfrac(ymolar)
     
     def _zmolar(self) -> list[float]:
         return self.eos.get_mole_fractions()

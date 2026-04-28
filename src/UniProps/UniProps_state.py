@@ -224,15 +224,21 @@ class BaseState:
 
         return Qmolar * (yMr/Mr)
     
-    def _massfrac_to_molefrac(self, massfrac:list[float], Mr) -> list[float]:
+    def _massfrac_to_molefrac(self, massfrac:list[float]) -> list[float]:
 
-        molefrac = [mi*Mr/Mri for mi, Mri in zip(massfrac, self._molar_masses)]
+        nis = [mi/Mri for mi, Mri in zip(massfrac, self._molar_masses)]
+        nt = sum(nis)
 
-        return molefrac
+        molefracs = [ni/nt for ni in nis]
+
+        return molefracs
     
-    def _molefrac_to_massfrac(self, molefrac:list[float], Mr) -> list[float]:
+    def _molefrac_to_massfrac(self, molefrac:list[float]) -> list[float]:
 
-        massfrac = [ni*Mri/Mr for ni, Mri in zip(molefrac, self._molar_masses)]
+        mis = [ni*Mri for ni, Mri in zip(molefrac, self._molar_masses)]
+        mt = sum(mis)
+
+        massfrac = [mi/mt for mi in mis]
 
         return massfrac
     
