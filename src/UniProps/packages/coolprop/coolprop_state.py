@@ -61,6 +61,11 @@ class CoolPropState(BaseState):
         self._mole_fractions=self.eos.get_mole_fractions()
         self._molar_masses= [self.eos.get_fluid_constant(i, cp.imolar_mass) for i, fld in enumerate(self._components)]
 
+        self._pmin = state.trivial_keyed_output(cp.iP_min)
+        self._pmax = state.trivial_keyed_output(cp.iP_max)
+        self._Tmin = state.trivial_keyed_output(cp.iT_min)
+        self._Tmax = state.trivial_keyed_output(cp.iT_max)
+
 
     def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
         self.eos.update(cp.DmolarHmolar_INPUTS, Dmolar, Hmolar)
@@ -69,6 +74,12 @@ class CoolPropState(BaseState):
         self.eos.update(cp.DmolarP_INPUTS, Dmolar, p)
 
     def _DmolarQmolar(self, Dmolar, Qmolar, **kwargs):
+
+        # in future this should be performed as:
+        # guesses = cp.PyGuessesStructure()
+        # guesses.T = self.eos.T_critical() *0.999 # this should target the highest pressure solution, in case there a multiple solutions
+        # self.eos.update_with_guesses(cp.DmolarQ_INPUTS, Dmolar, Qmolar, guesses)
+
         self.eos.update(cp.DmolarQ_INPUTS, Dmolar, Qmolar)
 
     def _DmolarSmolar(self, Dmolar, Smolar, **kwargs):
@@ -86,6 +97,11 @@ class CoolPropState(BaseState):
     def _HmolarQmolar(self, Hmolar, Qmolar, **kwargs):
         if self.Qmolar != 1:
             raise ValueError("CoolProp only supports h-Q calculations for Q=1")
+        
+        # in future this should be performed as:
+        # guesses = cp.PyGuessesStructure()
+        # guesses.T = self.eos.T_critical() *0.999 # this should target the highest pressure solution, in case there a multiple solutions
+        # self.eos.update_with_guesses(cp.HmolarQ_INPUTS, Hmolar, Qmolar, guesses)
         
         self.eos.update(cp.HmolarQ_INPUTS, Hmolar, Qmolar)
 
@@ -116,6 +132,11 @@ class CoolPropState(BaseState):
     def _QmolarSmolar(self, Qmolar, Smolar, **kwargs):
         if Qmolar != 0 and Qmolar != 1:
             raise ValueError("CoolProp only supports Q-s calculations for Q=0 or Q=1")
+        
+        # in future this should be performed as:
+        # guesses = cp.PyGuessesStructure()
+        # guesses.T = self.eos.T_critical() *0.999 # this should target the highest pressure solution, in case there a multiple solutions
+        # self.eos.update_with_guesses(cp.QSmolar_INPUTS, Qmolar, Smolar, guesses)
 
         self.eos.update(cp.QSmolar_INPUTS, Qmolar, Smolar)
 
@@ -206,18 +227,16 @@ class CoolPropState(BaseState):
         
     def _xmass(self) -> list[float]:
         xmolar = self.eos.mole_fractions_liquid()
-        xMr = self.xMr()
 
-        return self._molefrac_to_massfrac(xmolar, xMr)
+        return self._molefrac_to_massfrac(xmolar)
         
     def _ymolar(self) -> list[float]:
         return self.eos.mole_fractions_vapor()
     
     def _ymass(self) -> list[float]:
         ymolar = self.eos.mole_fractions_vapor()
-        yMr = self.yMr()
 
-        return self._molefrac_to_massfrac(ymolar, yMr)
+        return self._molefrac_to_massfrac(ymolar)
     
     def _zmolar(self) -> list[float]:
         return self.eos.get_mole_fractions()

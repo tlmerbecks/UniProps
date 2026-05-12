@@ -17,12 +17,12 @@ pip install UniProps
 * Evaluate state properties: density, enthalpy, entropy, internal energy, pressure, quality, temperature, volume - both molar and mass-based; bubble-point pressure/temperature, dew-point pressure/temperature; total/vapour/liquid phase molecular weight, mass fraction, mole fraction
 
 # Roadmap
-* Creating wrapped fluid states directly
 * Add additional libraries
     - fluidprop
     - thermopack
     - ...
 * Expose more properties and default methods where a library does not provide these
+* Expose partial derivatives
 * Add detailed documentation and examples
 * Expand unit tests
 
@@ -38,7 +38,41 @@ from UniProps import State, pairs
 
 cp_state = cp.AbstractState("HEOS", "Water")
 
-state = State(cp_state)
+state = State.from_instance(cp_state)
+state.update(pairs.PT, 101325, 350)
+
+print(state.p())
+print(state.T())
+print(state.Dmass())
+print(state.hmass())
+```
+
+Alternatively, UniProps can also create fluid representations from primitive data, i.e. component name, composition, model, etc.:
+
+```
+from UniProps import State, pairs
+
+state = State.from_primitives("coolprop", "HEOS", "water")
+
+cp_state = cp.AbstractState("HEOS", "Water")
+
+state = State.from_instance(cp_state)
+state.update(pairs.PT, 101325, 350)
+
+print(state.p())
+print(state.T())
+print(state.Dmass())
+print(state.hmass())
+```
+
+Similarly, we can also create mixtures:
+
+```
+from UniProps import State, pairs
+
+state = State.from_primitives("coolprop", "SRK", {"methane": 0.1, "decane": 0.9}, molar=True)
+
+state = State.from_instance(cp_state)
 state.update(pairs.PT, 101325, 350)
 
 print(state.p())
@@ -69,7 +103,7 @@ fld.update(cp.HmassP_INPUTS, hmass, p)
 To perform this calculation with UniProps, we wrap the fluid model and set `UniProps.settings.DO_WORKAROUND=True`
 ```
 from UniProps import State, pairs
-state = State(fld)
+state = State.from_instance(fld)
 
 from UniProps import settings
 settings.DO_WORKAROUND = True
@@ -90,7 +124,7 @@ from UniProps import State, pairs
 from UniProps import settings
 settings.DO_WORKAROUND = True
 
-state = State(fld)
+state = State.from_instance(fld)
 
 # evaluate some base state
 state.update(pairs.PT, 101325, 350)
@@ -123,10 +157,4 @@ print(f"p0: {p0:.4e} p:{state.p():.4e}")
 print(f"T0: {T0:.4e} T:{state.T():.4e}")
 print(f"hmass0: {h0:.4e} hmass:{state.hmass():.4e}")
 ```
-
-
-
-
-enthalpy-temperature calculations for native models (since multiple solutions may exist), or the cubic eos backends only support a small subset of
-
 

@@ -34,7 +34,7 @@ def obj_T_Q(T: float,
             pcrit: float, 
             kwargs: dict):
     """
-    Calculate objective for a given pressure p, given a temperature T
+    Calculate objective for a given temperature T, given a quality Q
     """
 
     state._QmolarT(Q, T, **kwargs)
@@ -44,3 +44,16 @@ def obj_T_Q(T: float,
     penal = log10(pcrit / state.p())
 
     return diff + penal
+
+def obj_T_Q_HU(T:float,
+               state: "BaseState",
+               Q: float,
+               prop: "properties",
+               kwargs: dict):
+    """
+    Calculate objective for a given temperature T, given a quality Q - objective is to maximise the property/determine when dXdT|Q = 0
+    """
+
+    state._QmolarT(Q, T, **kwargs)
+
+    return 1 / abs(state.get(prop))
