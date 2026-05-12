@@ -57,7 +57,7 @@ def res_Q_T(Q: float,
             y: float, 
             kwargs: dict):
     """
-    Calculate residual for quality Q, given a pressure p
+    Calculate residual for quality Q, given a temperature T
     """
 
     state._QmolarT(Q, T, **kwargs)
@@ -66,9 +66,9 @@ def res_Q_T(Q: float,
 
     return res
 
-def res_T_Q(Q: float, 
+def res_T_Q(T: float, 
             state: "BaseState", 
-            T: float, 
+            Q: float, 
             prop: "properties", 
             y: float, 
             kwargs: dict):

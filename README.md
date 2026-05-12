@@ -17,12 +17,12 @@ pip install UniProps
 * Evaluate state properties: density, enthalpy, entropy, internal energy, pressure, quality, temperature, volume - both molar and mass-based; bubble-point pressure/temperature, dew-point pressure/temperature; total/vapour/liquid phase molecular weight, mass fraction, mole fraction
 
 # Roadmap
-* Creating wrapped fluid states directly
 * Add additional libraries
     - fluidprop
     - thermopack
     - ...
 * Expose more properties and default methods where a library does not provide these
+* Expose partial derivatives
 * Add detailed documentation and examples
 * Expand unit tests
 

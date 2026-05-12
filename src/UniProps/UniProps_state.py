@@ -7,7 +7,7 @@ from . import settings
 from .utilities.constants import pairs, properties, phases, variables
 from .utilities.conversions import inputs_to_default_inputs, pair_to_vars, vars_to_pair, var_to_property
 from .utilities.residuals import res_T_p, res_Q_p, res_p_T, res_Q_T, res_T_Q
-from .utilities.objectives import obj_p_T, obj_T_Q
+from .utilities.objectives import obj_p_T, obj_T_Q, obj_T_Q_HU
 from .utilities.units import convert_to_SI, convert_from_SI
 
 from scipy.optimize import root_scalar, minimize_scalar, minimize
@@ -25,6 +25,12 @@ class BaseState:
     _components: list
     _mole_fractions: list
     _molar_masses: list
+
+    _pmin: float | None
+    _pmax: float | None
+    _Tmin: float | None
+    _Tmax: float | None
+
 
     def __init__(self):
 
@@ -137,7 +143,7 @@ class BaseState:
 
         try:
             result = func(val1_SI, val2_SI, **kwargs)
-        except ValueError as e:
+        except (ValueError, NotImplementedError) as e:
             msg = f"WARNING! Package \"{self.package}\" with model \"{self.model}\" has raised an error \"{e}\"."
             print(msg)
 
@@ -349,13 +355,23 @@ class BaseState:
                     **kwargs):
 
         if pmin is None:
-            pmin = settings.PMIN
-        elif pmin < settings.PMIN:
+            if self._pmin is not None:
+                pmin = self._pmin
+            else:
+                pmin = settings.PMIN
+        elif self._pmin is not None and pmin < self._pmin:
+            pmin = self._pmin
+        elif pmin < settings.PMIN:     
             pmin = settings.PMIN
 
         if pmax is None:
-            pmax = settings.PMAX
-        elif pmax > settings.PMAX:
+            if self._pmax is not None:
+                pmax = self._pmax
+            else:
+                pmax = settings.PMAX
+        elif self._pmax is not None and pmax < self._pmax:
+            pmax = self._pmax
+        elif pmax > settings.PMAX:     
             pmax = settings.PMAX
 
         vars = (var1, var2)
@@ -506,18 +522,54 @@ class BaseState:
         Tmin = self.T()
         ymin = self.get(prop)
 
-        if (ycrit - y) * (y - ymin) >= 0:
-            if prop in tricky_QY:
-                sol = minimize_scalar(obj_T_Q, args=(self, Q, prop, y, pcrit, kwargs), bounds=[Tmin, Tcrit])
-
-                return sol.success  # type: ignore
-            else:
-                sol = root_scalar(res_T_Q, args=(self, Q, prop, y, kwargs), method="brentq", bracket=[Tmin, Tcrit])
-
+        if var not in tricky_QY:
+            if (ycrit - y) * (y - ymin) >= 0:
+                sol = root_scalar(res_T_Q, args=(self, Q, prop, y, kwargs), method="brentq", bracket=[min(Tmin, Tcrit), max(Tmin, Tcrit)])
                 return sol.converged
-        else:
-            msg = f"Solution p for Q={Q} and {prop.name}={y} is outwith the pressure range of pmin={pmin} and pcrit={pcrit}"
+            else:
+                msg = f"Solution p for Q={Q} and {prop.name}={y} is outwith the pressure range of pmin={pmin} and pcrit={pcrit}"
+                raise ValueError(msg)
+
+        # this will be tricky...
+
+        # does a solution exist?
+        if min(ymin, ycrit) > y:
+            msg = f"Solution of Q={Q} and {prop.name}={y} is out side the \
+            pressure range of pmin={pmin} and pcrit={pcrit}."
             raise ValueError(msg)
+        
+        # is there a maximum between Tcrit and Tmin?
+        Tav = (Tcrit + Tmin)/2
+        self.update(pairs.QmolarT, Q, Tav)
+        yav = self.get(prop)
+
+        if ((yav - ycrit)/(Tav - Tcrit)) * ((ymin - yav)/(Tmin - Tav)) > 0 :
+            # the "gradient" does not change sign, so the function is likely monotonically increasing/decreasing
+            if max(ymin, ycrit) < y:
+                msg = f"{prop.name}={y} exceeds the maximum value ({max(ymin, ycrit)}) in the \
+                pressure range of pmin={pmin} and pcrit={pcrit}."
+                raise ValueError(msg)
+
+            # since there is no maximum, there is also only one solution in the interval
+            sol = root_scalar(res_T_Q, args=(self, Q, prop, y, kwargs), method="brentq", bracket=[min(Tmin, Tcrit), max(Tmin, Tcrit)])
+            return sol.converged
+        
+        # there is a maximum... need to find dXdT | Q (i.e. T_ymax), so that we can then bracket the solution...
+        minimize_scalar(obj_T_Q_HU, args=(self, Q, prop, kwargs), bounds=[min(Tmin, Tcrit), max(Tmin, Tcrit)])
+        ymax = self.get(prop)
+        T_ymax = self.T()
+
+        if ymax < y:
+            msg = f"{prop.name}={y} exceeds the maximum value ({ymax}) in the \
+            pressure range of pmin={pmin} and pcrit={pcrit}."
+            raise ValueError(msg)
+        
+        if (ycrit-y)*(ymax - y) < 0:
+            sol = minimize_scalar(obj_T_Q, args=(self, Q, prop, y, pcrit, kwargs), bounds=[min(T_ymax, Tcrit), max(T_ymax, Tcrit)])
+        else:
+            sol = minimize_scalar(obj_T_Q, args=(self, Q, prop, y, pcrit, kwargs), bounds=[min(T_ymax, Tmin), max(T_ymax, Tmin)])
+
+        return sol.success  # type: ignore
 
     def _YZ(self, vals: tuple[float, float], vars: tuple[variables,variables], **kwargs):
 
