@@ -11,7 +11,7 @@ Tests for the HEOS coolprop backend - verifying the supported vs. unsupported
 calculation modes, whether the workaround methods are working as expected.
 """
 
-backend = "HEOS"
+backend = "REFPROP"
 fluid = "Water"
 
 p0 = 101325  # Pa - the pressure of the reference cases
@@ -19,13 +19,13 @@ T0 = 350  # K - the temperature of the reference case
 Q0 = 1  # the quality of the reference case
 
 unsupported_pairs = (
-    pairs.HmolarT,
-    pairs.HmolarQmolar,  # supposedly supported for Q=1, but does not seem so...
-    pairs.HmolarUmolar,
-    pairs.QmolarSmolar,  # supposedly supported for Q=0 and Q=1
-    pairs.QmolarUmolar,
-    pairs.SmolarUmolar,
-    pairs.TUmolar
+    # pairs.HmolarT,
+    # pairs.HmolarQmolar,  # supposedly supported for Q=1, but does not seem so...
+    # pairs.HmolarUmolar,
+    # pairs.QmolarSmolar,  # supposedly supported for Q=0 and Q=1
+    # pairs.QmolarUmolar,
+    # pairs.SmolarUmolar,
+    # pairs.TUmolar
         )
 
 fld_PT = cp.AbstractState(backend, fluid)

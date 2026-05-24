@@ -7,11 +7,11 @@ import CoolProp as cp
 from contextlib import contextmanager
 
 """
-Tests for the HEOS coolprop backend - verifying the supported vs. unsupported 
+Tests for the Cubic coolprop backend - verifying the supported vs. unsupported 
 calculation modes, whether the workaround methods are working as expected.
 """
 
-backend = "HEOS"
+backend = "SRK"
 fluid = "Water"
 
 p0 = 101325  # Pa - the pressure of the reference cases
@@ -19,14 +19,25 @@ T0 = 350  # K - the temperature of the reference case
 Q0 = 1  # the quality of the reference case
 
 unsupported_pairs = (
+    pairs.DmolarHmolar, 
+    pairs.DmolarP,
+    pairs.DmolarQmolar,
+    pairs.DmolarSmolar,
+    pairs.DmolarT,
+    pairs.DmolarUmolar,
+    pairs.HmolarP,
+    pairs.HmolarQmolar,
+    pairs.HmolarSmolar,
     pairs.HmolarT,
-    pairs.HmolarQmolar,  # supposedly supported for Q=1, but does not seem so...
     pairs.HmolarUmolar,
-    pairs.QmolarSmolar,  # supposedly supported for Q=0 and Q=1
+    pairs.PSmolar,
+    pairs.PUmolar,
+    pairs.QmolarSmolar,
     pairs.QmolarUmolar,
+    pairs.SmolarT,
     pairs.SmolarUmolar,
-    pairs.TUmolar
-        )
+    pairs.TUmolar,
+    )
 
 fld_PT = cp.AbstractState(backend, fluid)
 fld_PT.update(cp.PT_INPUTS, p0, T0)
@@ -63,7 +74,7 @@ def temporary_option():
         # The finally block ensures the reset happens even if an exception occurs
         settings.DO_WORKAROUND = False
 
-def test_HEOS_unsupported_modes():
+def test_SRK_unsupported_modes():
     """
     Tests whether the support for calculation modes has changed between versions. 
     I.e. modes that used be unsupported should still be unsupported.
@@ -98,7 +109,7 @@ def test_HEOS_unsupported_modes():
     assert succeeded == 0
 
 
-def test_HEOS_calc_modes():
+def test_SRK_calc_modes():
     """
     Tests whether the support for calculation modes has changed between versions. 
     I.e. modes that used be supported should still be supported.
@@ -133,6 +144,115 @@ def test_HEOS_calc_modes():
     assert failed == 0
 
 
+def test_DH_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarHmolar, vals_PT[variables.Dmolar], vals_PT[variables.Hmolar])
+        except:
+            assert False
+
+def test_DP_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarP, vals_PT[variables.Dmolar], vals_PT[variables.P])
+        except:
+            assert False
+
+def test_DQ_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarQmolar, vals_PQ[variables.Dmolar], vals_PQ[variables.Qmolar])
+        except:
+            assert False
+
+def test_DS_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarSmolar, vals_PT[variables.Dmolar], vals_PT[variables.Smolar])
+        except:
+            assert False
+
+def test_DT_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarT, vals_PT[variables.Dmolar], vals_PT[variables.T])
+        except:
+            assert False
+
+def test_DU_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.DmolarUmolar, vals_PT[variables.Dmolar], vals_PT[variables.Umolar])
+        except:
+            assert False
+
+
+def test_HP_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.HmolarP, vals_PT[variables.Hmolar], vals_PT[variables.P])
+        except:
+            assert False
+
+def test_HQ_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.HmolarQmolar, vals_PQ[variables.Hmolar], vals_PQ[variables.Qmolar])
+        except:
+            assert False
+
+def test_HS_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.HmolarSmolar, vals_PT[variables.Hmolar], vals_PT[variables.Smolar])
+        except:
+            assert False
+
 def test_HT_workaround():
 
     with temporary_option():
@@ -145,19 +265,8 @@ def test_HT_workaround():
         except:
             assert False
 
-
-def test_HQ_workaround():
-    with temporary_option():
-
-        fld = cp.AbstractState(backend, fluid)
-        state = State.from_instance(fld)
-
-        try:
-            state.update(pairs.HmolarQmolar, vals_PQ[variables.Hmolar], vals_PQ[variables.Qmolar])
-        except:
-            assert False
-
 def test_HU_workaround():
+
     with temporary_option():
 
         fld = cp.AbstractState(backend, fluid)
@@ -168,20 +277,44 @@ def test_HU_workaround():
         except:
             assert False
 
+def test_PS_workaround():
 
-def test_QS_workaround():
     with temporary_option():
 
         fld = cp.AbstractState(backend, fluid)
         state = State.from_instance(fld)
 
         try:
-            state.update(pairs.HmolarSmolar, vals_PT[variables.Hmolar], vals_PT[variables.Smolar])
+            state.update(pairs.PSmolar, vals_PT[variables.P], vals_PT[variables.Smolar])
         except:
             assert False
 
+def test_PU_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.PUmolar, vals_PT[variables.P], vals_PT[variables.Umolar])
+        except:
+            assert False
+
+def test_QS_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.QmolarSmolar, vals_PQ[variables.Qmolar], vals_PQ[variables.Smolar])
+        except:
+            assert False
 
 def test_QU_workaround():
+
     with temporary_option():
 
         fld = cp.AbstractState(backend, fluid)
@@ -192,8 +325,20 @@ def test_QU_workaround():
         except:
             assert False
 
+def test_ST_workaround():
+
+    with temporary_option():
+
+        fld = cp.AbstractState(backend, fluid)
+        state = State.from_instance(fld)
+
+        try:
+            state.update(pairs.SmolarT, vals_PT[variables.Smolar], vals_PT[variables.T])
+        except:
+            assert False
 
 def test_SU_workaround():
+
     with temporary_option():
 
         fld = cp.AbstractState(backend, fluid)
@@ -204,8 +349,8 @@ def test_SU_workaround():
         except:
             assert False
 
-
 def test_TU_workaround():
+
     with temporary_option():
 
         fld = cp.AbstractState(backend, fluid)

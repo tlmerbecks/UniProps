@@ -2,8 +2,8 @@ import CoolProp as cp
 import numpy as np
 
 from .coolprop_state import CoolPropState
-from UniProps.utilities.errors import PackageError
 
+from UniProps.utilities.errors import PackageError
 
 class CoolPropFactory:
 

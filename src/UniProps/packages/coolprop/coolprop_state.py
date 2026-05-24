@@ -66,6 +66,18 @@ class CoolPropState(BaseState):
         self._Tmin = state.trivial_keyed_output(cp.iT_min)
         self._Tmax = state.trivial_keyed_output(cp.iT_max)
 
+    def _recover_state(self):
+
+        try:
+            self.eos.update(cp.PT_INPUTS, self.eos.p_critical() * 1.1, self.eos.T_critical()*1.1)
+
+        except Exception as e:
+
+            backend = self.eos.backend_name()
+            fluids = "&".join(self.eos.fluid_names())
+
+            self.eos = cp.AbstractState(backend, fluids)
+            self.eos.set_mole_fractions(self._mole_fractions)
 
     def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
         self.eos.update(cp.DmolarHmolar_INPUTS, Dmolar, Hmolar)
