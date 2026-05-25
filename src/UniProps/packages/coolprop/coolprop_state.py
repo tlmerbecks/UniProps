@@ -59,13 +59,35 @@ class CoolPropState(BaseState):
 
         self._components=self.eos.fluid_names()
         self._mole_fractions=self.eos.get_mole_fractions()
-        self._molar_masses= [self.eos.get_fluid_constant(i, cp.imolar_mass) for i, fld in enumerate(self._components)]
+        try:
+            self._molar_masses= [self.eos.get_fluid_constant(i, cp.imolar_mass) for i, fld in enumerate(self._components)]
+        except:
+            # this workaround exists because not every CoolProp backend implements 
+            # the get_fluid_constant() methodd. 
+            import json
+            
+            self._molar_masses = []
+            for comp in self._components:
+                data = json.loads(cp.CoolProp.get_fluid_param_string(comp, "JSON"))
+                self._molar_masses.append(data[0]["EOS"][0]["molar_mass"])
 
         self._pmin = state.trivial_keyed_output(cp.iP_min)
         self._pmax = state.trivial_keyed_output(cp.iP_max)
         self._Tmin = state.trivial_keyed_output(cp.iT_min)
         self._Tmax = state.trivial_keyed_output(cp.iT_max)
 
+    def _recover_state(self):
+
+        try:
+            self.eos.update(cp.PT_INPUTS, self.eos.p_critical() * 1.1, self.eos.T_critical()*1.1)
+
+        except Exception as e:
+
+            backend = self.eos.backend_name()
+            fluids = "&".join(self.eos.fluid_names())
+
+            self.eos = cp.AbstractState(backend, fluids)
+            self.eos.set_mole_fractions(self._mole_fractions)
 
     def _DmolarHmolar(self, Dmolar, Hmolar, **kwargs):
         self.eos.update(cp.DmolarHmolar_INPUTS, Dmolar, Hmolar)
@@ -226,7 +248,7 @@ class CoolPropState(BaseState):
         return self.eos.mole_fractions_liquid()
         
     def _xmass(self) -> list[float]:
-        xmolar = self.eos.mole_fractions_liquid()
+        xmolar = self.eos.mole_fractions_liquid()        
 
         return self._molefrac_to_massfrac(xmolar)
         

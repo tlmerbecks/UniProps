@@ -150,6 +150,7 @@ class BaseState:
             if settings.DO_WORKAROUND:
                 try:
                     print("Attempting to workaround...")
+                    self._recover_state()
                     result = self._workaround(var1, val1_SI, var2, val2_SI, **kwargs)
                     print("Workaround completed!")
                 except:
@@ -214,6 +215,11 @@ class BaseState:
 
         pass
 
+    def _recover_state(self):
+        """
+        Check whether the state is a safe state, if not, try to recover it...
+        """
+        pass
 
     # utilities for converting between mass and molar based vapour quality
     def _Qmass_to_Qmolar(self, Qmass: float) -> float:
@@ -355,24 +361,22 @@ class BaseState:
                     **kwargs):
 
         if pmin is None:
-            if self._pmin is not None:
+            if self._pmin is not None and settings.PMIN <= self._pmin <= settings.PMAX:
                 pmin = self._pmin
             else:
                 pmin = settings.PMIN
-        elif self._pmin is not None and pmin < self._pmin:
-            pmin = self._pmin
-        elif pmin < settings.PMIN:     
-            pmin = settings.PMIN
+        
+        elif pmin < max(self._pmin if self._pmin is not None else 0, settings.PMIN):
+            pmin = max(self._pmin if self._pmin is not None else 0, settings.PMIN)
 
         if pmax is None:
-            if self._pmax is not None:
+            if self._pmax is not None and settings.PMIN < self._pmax <= settings.PMAX:
                 pmax = self._pmax
             else:
                 pmax = settings.PMAX
-        elif self._pmax is not None and pmax < self._pmax:
-            pmax = self._pmax
-        elif pmax > settings.PMAX:     
-            pmax = settings.PMAX
+        
+        elif pmax > min(self._pmax if self._pmax is not None else settings.PMAX, settings.PMIN):
+            pmax = min(self._pmax if self._pmax is not None else settings.PMAX, settings.PMIN)
 
         vars = (var1, var2)
         vals = (val1, val2)
@@ -524,7 +528,8 @@ class BaseState:
 
         if var not in tricky_QY:
             if (ycrit - y) * (y - ymin) >= 0:
-                sol = root_scalar(res_T_Q, args=(self, Q, prop, y, kwargs), method="brentq", bracket=[min(Tmin, Tcrit), max(Tmin, Tcrit)])
+
+                sol = root_scalar(res_T_Q, args=(self, Q, prop, y, kwargs), method="brentq", bracket=[min(Tmin, Tmax), max(Tmin, Tmax)])
                 return sol.converged
             else:
                 msg = f"Solution p for Q={Q} and {prop.name}={y} is outwith the pressure range of pmin={pmin} and pcrit={pcrit}"
