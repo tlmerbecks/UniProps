@@ -59,7 +59,17 @@ class CoolPropState(BaseState):
 
         self._components=self.eos.fluid_names()
         self._mole_fractions=self.eos.get_mole_fractions()
-        self._molar_masses= [self.eos.get_fluid_constant(i, cp.imolar_mass) for i, fld in enumerate(self._components)]
+        try:
+            self._molar_masses= [self.eos.get_fluid_constant(i, cp.imolar_mass) for i, fld in enumerate(self._components)]
+        except:
+            # this workaround exists because not every CoolProp backend implements 
+            # the get_fluid_constant() methodd. 
+            import json
+            
+            self._molar_masses = []
+            for comp in self._components:
+                data = json.loads(cp.CoolProp.get_fluid_param_string(comp, "JSON"))
+                self._molar_masses.append(data[0]["EOS"][0]["molar_mass"])
 
         self._pmin = state.trivial_keyed_output(cp.iP_min)
         self._pmax = state.trivial_keyed_output(cp.iP_max)
@@ -238,7 +248,7 @@ class CoolPropState(BaseState):
         return self.eos.mole_fractions_liquid()
         
     def _xmass(self) -> list[float]:
-        xmolar = self.eos.mole_fractions_liquid()
+        xmolar = self.eos.mole_fractions_liquid()        
 
         return self._molefrac_to_massfrac(xmolar)
         
